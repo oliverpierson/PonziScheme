@@ -75,3 +75,34 @@ Data* Frame::LookupValue(Symbol *symbol)
         throw new MissingBinding("Frame::Lookup", symbol->AsString());
     return bindings[symbol]; 
 }
+
+Data* Environment::LookupValue(Symbol *symbol)
+{ 
+    if( !frames.empty() ) {
+        std::stack<Frame*> tempframes;
+        Frame *fp = frames.top();
+        while( !fp->BindingExists(symbol) ) {
+            tempframes.push(frames.top());
+            frames.pop();
+            if( frames.empty() ) {
+                // the binding doesn't exists so restore the environment and throw exception
+                while( !tempframes.empty() ) {
+                    frames.push(tempframes.top());
+                    tempframes.pop();
+                }
+                throw new MissingBinding("Environment::LookupValue", symbol->AsString());    
+            }
+            fp = frames.top();
+        }
+        while( !tempframes.empty() ) {
+            frames.push(tempframes.top());
+            tempframes.pop();
+        }
+        return fp->LookupValue(symbol);
+    }
+    else {
+        // environment contains no frames
+        throw new MissingBinding("Environment::LookupValue", symbol->AsString());
+    }
+}
+

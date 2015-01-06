@@ -32,13 +32,19 @@ int main(void)
     try {
         d = env.LookupValue(&y);
     } catch (MissingBinding *e) {
-        cout << "Unbound variable: " << e->GetMessage() << endl;
+        cout << "Unbound variable: " << e->GetMessage() << ", caller: " << e->GetCaller() << endl;
         Frame *frame3 = new Frame();
         frame3->AddBinding(&y, new Number(12345));
         env.Push(frame3);
         d = env.LookupValue(&y);
     }
     assert(d->AsString() == string("12345"));
+
+    try {
+       frame1.LookupValue(new Symbol("xyz"));
+    } catch (MissingBinding *e) {
+        cout << "Unbound variable: " << e->GetMessage() << ", caller: " << e->GetCaller() << endl;
+    }
 
     assert(x.Eval(&env)->AsString() == "10");
 

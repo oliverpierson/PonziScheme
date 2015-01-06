@@ -15,6 +15,7 @@ class Exception {
     public:
         Exception(const char *caller_, const std::string message_) { message = message_; caller = caller_; }
         std::string GetMessage() { return message; }
+        std::string GetCaller() { return caller; }
 };
 
 /* Data Types */
@@ -72,28 +73,7 @@ class Environment {
         Frame* Pop() { Frame *retval = frames.top(); frames.pop(); return retval; }
         Frame* Top() { return frames.top(); }
         void Push(Frame* f) { frames.push(f); }
-        Data* LookupValue(Symbol *symbol) 
-        { 
-            if( !frames.empty() ) {
-                std::stack<Frame*> tempframes;
-                Frame *fp = frames.top();
-                while( !fp->BindingExists(symbol) ) {
-                    tempframes.push(frames.top());
-                    frames.pop();
-                    if( frames.empty() )
-                        break;
-                    fp = frames.top();
-                }
-                while( !tempframes.empty() ) {
-                    frames.push(tempframes.top());
-                    tempframes.pop();
-                }
-                return fp->LookupValue(symbol);
-            } else {
-                std::cout << "Failed to lookup " << std::endl;
-                throw 10;
-            }
-        }
+        Data* LookupValue(Symbol *symbol);
 };
 
 class Cons : public Data {
