@@ -33,13 +33,15 @@ Data* Cons::Eval(Environment *env)
                 return this->Cadr();
             else if( head == "lambda" )
                 return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr()->Car());
-            else
+            else if( left->Eval(env)->IsProcedure() )
                 return EvalProcedure((Procedure*)left->Eval(env), (Cons*)right, env);
         }
-        throw 99; // unknown special-form
+        throw new BadForm("Cons::Eval"); // unknown special-form
     } 
     // otherwise treat it as procedure application e.g. ((lambda (x) x) 3) => 3
-    return EvalProcedure((Procedure*)left, (Cons*)right, env);
+    if( left->Eval(env)->IsProcedure() )
+        return EvalProcedure((Procedure*)left, (Cons*)right, env);
+    throw new BadForm("Cons::Eval"); // if nothing matches thrown an error
 }
 
 SymbolTable::~SymbolTable()
