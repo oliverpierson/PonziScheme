@@ -21,18 +21,8 @@ Data* Cons::Eval(Environment *env)
             } 
             else if( head == "quote" )
                 return this->Cadr();
-            else if( head == "lambda" ) {
-                //make procedue -- maybe move to Procedure class and add delete method
-                Cons *arglist = (Cons*)this->Cadr();
-                std::vector<Symbol*> *args = new std::vector<Symbol*>();
-                Data* code = this->Cddr()->Car();
-                while( !arglist->IsNil() ) {
-                    args->push_back((Symbol*)arglist->Car());
-                    arglist = (Cons*)arglist->Cdr();
-                }
-                Procedure *proc = new Procedure(env, code, args);
-                return proc;
-            }
+            else if( head == "lambda" )
+                return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr()->Car());
         } 
         throw 99; // unknown special-form
     } else {
@@ -103,5 +93,16 @@ Data* Environment::LookupValue(Symbol *symbol)
         // environment contains no frames
         throw new MissingBinding("Environment::LookupValue", symbol->AsString());
     }
+}
+
+Procedure * Procedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)
+{
+    std::vector<Symbol*> *argvec = new std::vector<Symbol*>();
+    while( !arglist->IsNil() ) {
+        argvec->push_back((Symbol*)arglist->Car());
+        arglist = (Cons*)arglist->Cdr();
+    }
+    Procedure *proc = new Procedure(env, codelist, argvec);
+    return proc;
 }
 

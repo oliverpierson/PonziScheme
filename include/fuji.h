@@ -178,12 +178,14 @@ class Procedure : public Data {
         Environment* environment;
         Data* code;
         std::vector<Symbol*> *args;
-    public:
         Procedure(Environment *env, Data* code_, std::vector<Symbol*> *args_) { environment = env; code = code_; args = args_; }
+        ~Procedure() { delete args; }
+    public:
         Data* Apply(Environment *env, std::vector<Data*> args);
         std::string AsString() { return std::string("#<function>"); }
         bool IsProcedure() { return true; }
         Data* Eval(Environment *env) { return this; }
+        static Procedure * MakeProcedure(Environment*, Cons*, Data*);
 };
 
 
