@@ -98,7 +98,11 @@ int main( int argc, char *argv[] )
   while ( yychar != YYEOF ) {
  //   printDatum(eval(globalEnv, exp));
     //std::cout << std::endl << exp->AsString() << std::endl;
-    std::cout << exp->Eval(global_env)->AsString() << std::endl;
+    try { 
+        std::cout << exp->Eval(global_env)->AsString() << std::endl;
+    } catch (MissingBinding *e) {
+        std::cout << "Missing Binding for " << e->GetMessage() << ", caller: " << e->GetCaller() << std::endl;
+    }
     printf("\n");
     printf("\n>> ");
     yyparse(&exp);

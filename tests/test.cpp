@@ -52,7 +52,9 @@ int main(void)
     Symbol* z = new Symbol(string("z"));
     Data* i987 = new Number(987);
     list = new Cons(new Symbol(string("define")), new Cons(z, new Cons(i987, nil)));
+    cout << "here." << endl;
     list->Eval(&env);
+    cout << "here." << endl;
     list->Eval(&env); // this second call shouldn't increase the reference count
     cout << z->Eval(&env)->AsString() << endl;
     cout << "987 has " << i987->GetRefs() << " references." << endl;

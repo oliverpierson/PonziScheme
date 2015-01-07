@@ -7,6 +7,16 @@ Data* Nil::Eval(Environment *env)
     return nil;
 }
 
+Data * EvalProcedure(Procedure * proc, Cons * arglist, Environment * env)
+{
+    std::vector<Data*> argvals;
+    while( !arglist->IsNil() ) {
+        argvals.push_back(arglist->Car()->Eval(env));
+        arglist = (Cons*)arglist->Cdr();
+    }
+    return proc->Apply(env, argvals);
+}
+
 Data* Cons::Eval(Environment *env)
 {
     if( left->IsAtom() ) { 
@@ -23,18 +33,13 @@ Data* Cons::Eval(Environment *env)
                 return this->Cadr();
             else if( head == "lambda" )
                 return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr()->Car());
-        } 
-        throw 99; // unknown special-form
-    } else {
-        Procedure *proc = (Procedure*)left->Eval(env);
-        std::vector<Data*> argvals;
-        Cons* arglist = (Cons*)right;
-        while( !arglist->IsNil() ) {
-            argvals.push_back(arglist->Car()->Eval(env));
-            arglist = (Cons*)arglist->Cdr();
+            else
+                return EvalProcedure((Procedure*)left->Eval(env), (Cons*)right, env);
         }
-        return proc->Apply(env, argvals);
-    }
+        throw 99; // unknown special-form
+    } 
+    // otherwise treat it as procedure application e.g. ((lambda (x) x) 3) => 3
+    return EvalProcedure((Procedure*)left, (Cons*)right, env);
 }
 
 SymbolTable::~SymbolTable()
