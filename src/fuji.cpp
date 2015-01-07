@@ -9,21 +9,20 @@ Data* Nil::Eval(Environment *env)
 
 Data* Cons::Eval(Environment *env)
 {
-
     // TODO probably should check that this cons is a list first
     if( left->IsAtom() ) { 
         if( ((Atom*)left)->IsSymbol() ) {
-            if( left->AsString() == std::string("define") ) {
+            std::string head = left->AsString();
+            if( head == "define" ) {
                 Frame *frame = env->Top();
                 Symbol* name = (Symbol*)((Cons*)right)->Car();
                 Data* value = ((Cons*)right)->Cadr()->Eval(env);
                 frame->AddBinding(name, value);
                 return nil;
-            }
-            else if( left->AsString() == std::string("quote") ) {
+            } 
+            else if( head == "quote" )
                 return this->Cadr();
-            }
-            else if (left->AsString() == std::string("lambda") ) {
+            else if( head == "lambda" ) {
                 //make procedue -- maybe move to Procedure class and add delete method
                 Cons *arglist = (Cons*)this->Cadr();
                 std::vector<Symbol*> *args = new std::vector<Symbol*>();
@@ -35,17 +34,18 @@ Data* Cons::Eval(Environment *env)
                 Procedure *proc = new Procedure(env, code, args);
                 return proc;
             }
+        } 
+        throw 99; // unknown special-form
+    } else {
+        Procedure *proc = (Procedure*)left->Eval(env);
+        std::vector<Data*> argvals;
+        Cons* arglist = (Cons*)right;
+        while( !arglist->IsNil() ) {
+            argvals.push_back(arglist->Car()->Eval(env));
+            arglist = (Cons*)arglist->Cdr();
         }
+        return proc->Apply(env, argvals);
     }
-    //else: function application
-    Procedure *proc = (Procedure*)left->Eval(env);
-    std::vector<Data*> argvals;
-    Cons* arglist = (Cons*)right;
-    while( !arglist->IsNil() ) {
-        argvals.push_back(arglist->Car()->Eval(env));
-        arglist = (Cons*)arglist->Cdr();
-    }
-    return proc->Apply(env, argvals);
 }
 
 SymbolTable::~SymbolTable()
