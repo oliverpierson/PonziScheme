@@ -44,16 +44,16 @@ SymbolTable::~SymbolTable()
     }
 }
 
-Data* Procedure::Apply(Environment *env, std::vector<Data*> argvals)
+Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
 {
     Frame *frame = new Frame();
     std::vector<Symbol*>::iterator symit = args->begin();
     std::vector<Data*>::iterator valit = argvals.begin();
     for( ; symit != args->end() && valit != argvals.end(); ++symit, ++valit )
         frame->AddBinding(*symit, *valit);
-    env->Push(frame);
-    Data *return_data = code->Eval(env);
-    env->Pop();
+    environment->Push(frame);
+    Data *return_data = code->Eval(environment);
+    environment->Pop();
     delete frame;
     return return_data;
 }
