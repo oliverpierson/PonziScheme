@@ -25,6 +25,12 @@ class NotCons : public Exception {
         NotCons(const char * caller_, const std::string message_) : Exception(caller_, message_) { }
 }; 
 
+class BadForm : public Exception {
+    private:
+        std::string error = "Badly formed input detected.";
+    public:
+        BadForm(const char * caller_) : Exception(caller_, "Badly formed expression detected") {}
+};
 
 /* Data Types */
 class Environment; // Need to declare this early for Data::Eval()
