@@ -35,7 +35,9 @@ class Data {
         Data() { refs = 0; }
         virtual Data* Eval(Environment* env) { return NULL; } // throw error
         virtual std::string AsString() { return std::string("Error"); } // throw error if this is reached 
-        int deref() { if(refs > 0) refs--; return refs; } //else throw error 
+        int IncRefs() { return ++refs; }
+        int DecRefs() { if(refs > 0) refs--; return refs; } //else throw error 
+        int GetRefs() { return refs; }
 
         // some builtins -- should be a predicate for each builtin datatype
         virtual bool IsAtom() { return false; }
@@ -55,7 +57,7 @@ class Binding {
         Symbol *name;
         Data *value;
     public:
-        Binding(Symbol *n, Data* v) { name = n; value = v; }
+        Binding(Symbol *n, Data* v) { name = n; value = v; value->IncRefs(); }
         void SetValue(Data* v) { value = v; }
 };
 
@@ -70,7 +72,13 @@ class Frame {
     private:
         std::map<Symbol*, Data*> bindings;
     public:
-        void AddBinding(Symbol *s, Data *v) { bindings[s] = v; }
+        void AddBinding(Symbol *s, Data *v)
+        {
+            if( !BindingExists(s) ) {
+                bindings[s] = v;
+                v->IncRefs();
+            }
+        } 
         bool BindingExists(Symbol *symbol)
         {
             if( bindings.find(symbol) == bindings.end() )

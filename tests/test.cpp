@@ -50,9 +50,12 @@ int main(void)
 
 
     Symbol* z = new Symbol(string("z"));
-    list = new Cons(new Symbol(string("define")), new Cons(z, new Cons(new Number(987), nil)));
+    Data* i987 = new Number(987);
+    list = new Cons(new Symbol(string("define")), new Cons(z, new Cons(i987, nil)));
     list->Eval(&env);
+    list->Eval(&env); // this second call shouldn't increase the reference count
     cout << z->Eval(&env)->AsString() << endl;
+    cout << "987 has " << i987->GetRefs() << " references." << endl;
     
     list = new Cons(new Symbol(string("quote")), new Cons(new Symbol(string("blah")), nil));
     cout << list->Eval(&env)->AsString() << endl;
