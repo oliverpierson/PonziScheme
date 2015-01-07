@@ -1,0 +1,108 @@
+%{
+  #define YYSTYPE Data*
+  #include "reader.h"
+  #include <iostream>
+  extern int yylex();
+  extern int yyerror(Data**, char*);
+  SymbolTable * symbol_table = new SymbolTable();
+%}
+
+%token INTEGER
+%token SYMBOL
+%parse-param { Data **expr }
+
+%%
+
+line:
+/* empty */
+//| line 
+| line atom { *expr = $2; printf("parse complete.\n"); YYACCEPT; }
+| line list { *expr = $2; printf("parse complete.\n"); YYACCEPT; }
+| line quote { *expr = $2; printf("parse complete.\n"); YYACCEPT; }
+;
+
+atom:
+INTEGER
+| SYMBOL
+;
+
+quote:
+'\'' atom { $$ = cons(internSymbol("quote", symbol_table), cons($2, NIL)); }
+| '\'' list { $$ = cons(internSymbol("quote", symbol_table), cons($2, NIL)); }
+;
+
+list:
+'(' sexp ')' { $$ = $2; }
+;
+
+sexp:
+atom { $$ = cons($1, NIL); }
+| list { $$ = cons($1, NIL); }
+| atom sexp { $$ = cons($1, $2); }
+| list sexp { $$ = cons($1, $2); }
+| quote { $$ = cons($1, NIL); }
+| quote sexp { $$ = cons($1, $2); }
+;
+
+%%
+#include "fuji.h"
+
+Data* cons(Data * x, Data * y)
+{
+    return new Cons(x, y);
+}
+
+Data* internSymbol(char * str, SymbolTable * symtab)
+{
+    return symtab->InternSymbol(str);
+}
+
+Data* makeInt(char * str)
+{
+    return new Number(atoi(str));
+}
+
+int yyerror( Data** dat, char *str )
+{
+  printf("reader error: %s\n", str);
+}
+
+int yywrap()
+{
+  return 1;
+}
+
+
+int main( int argc, char *argv[] )
+{
+//  Datum *exp;
+//  Frame *globalEnv = initFrame(NIL); /* global env frame */
+  Data * exp;
+  Environment * global_env = new Environment();
+  Frame * bottom_frame = new Frame();
+  global_env->Push(bottom_frame);
+  
+  printf("loading...\n");
+//  if ( argc > 1 )
+//    symsize = atoi(argv[1]);
+//  printf("SymbolTable created with max of %d symbols.\n", symsize);
+//  addBinding(globalEnv, internSymbol("+", symbol_table), makePrimProc(&add));
+//  addBinding(globalEnv, internSymbol("*", symbol_table), makePrimProc(&mul));
+//  addBinding(globalEnv, internSymbol("-", symbol_table), makePrimProc(&minus));
+//  addBinding(globalEnv, internSymbol("car", symbol_table), makePrimProc(&extCar));
+//  addBinding(globalEnv, internSymbol("cdr", symbol_table), makePrimProc(&extCdr));
+//  addBinding(globalEnv, internSymbol("=", symbol_table), makePrimProc(&intEqual));
+//  addBinding(globalEnv, internSymbol("*mem-usage*", symbol_table), exportInt(&memUsed));
+  printf(">> ");
+  yyparse(&exp);
+  while ( yychar != YYEOF ) {
+ //   printDatum(eval(globalEnv, exp));
+    //std::cout << std::endl << exp->AsString() << std::endl;
+    std::cout << exp->Eval(global_env)->AsString() << std::endl;
+    printf("\n");
+    printf("\n>> ");
+    yyparse(&exp);
+  }
+  printf("\nGood-bye.\n");
+  exit(0);
+}

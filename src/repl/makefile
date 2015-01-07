@@ -1,0 +1,20 @@
+INCLUDE=../../include
+LIB=../../lib
+
+reader.tab.o:
+	bison -d reader.ypp
+	g++ -c reader.tab.cpp -I$(INCLUDE)
+
+lex.yy.o:
+	flex reader.l
+	g++ -c lex.yy.c -I$(INCLUDE)
+
+reader: reader.tab.o lex.yy.o
+	g++ reader.tab.o lex.yy.o $(LIB)/fuji.o -I$(INCLUDE) -o reader
+
+clean:
+	rm -rf *.tab.[ch]pp
+	rm -rf *.tab.o
+	rm -rf lex.yy.*
+
+
