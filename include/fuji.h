@@ -72,6 +72,12 @@ class Frame {
     private:
         std::map<Symbol*, Data*> bindings;
     public:
+        ~Frame()
+        {
+            for(std::map<Symbol*, Data*>::iterator it = bindings.begin();
+                it != bindings.end(); ++it)
+                it->second->DecRefs();
+        }
         void AddBinding(Symbol *s, Data *v)
         {
             if( !BindingExists(s) ) {
