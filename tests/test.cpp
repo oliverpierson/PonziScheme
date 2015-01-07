@@ -87,6 +87,12 @@ int main(void)
     } catch (NotCons *e) {
         cout << e->GetMessage() << " is not a cons, caller: " << e->GetCaller() << endl;
     }
+    try {
+        Cons *cons = new Cons(new Number(1), new Number(2));
+        cons->Cadr();
+    } catch (NotCons *e) {
+        cout << e->GetMessage() << " is not a cons, caller: " << e->GetCaller() << endl;
+    }
    
     cout << __FILE__ << ": all tests passed." << endl;
     exit(0);
