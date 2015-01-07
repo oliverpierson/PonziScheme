@@ -101,8 +101,8 @@ class Cons : public Data {
         Data* Eval(Environment*);
         Data* Car() { return left; }
         Data* Cdr() { return right; }
-        Data* Cadr() { return ((Cons*)right)->Car(); }
-        Data* Cddr() { return ((Cons*)right)->Cdr(); }
+        Data* Cadr() { return right->Car(); }
+        Data* Cddr() { return right->Cdr(); }
 };
 
 class Nil : public Cons {

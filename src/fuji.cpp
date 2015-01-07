@@ -9,14 +9,13 @@ Data* Nil::Eval(Environment *env)
 
 Data* Cons::Eval(Environment *env)
 {
-    // TODO probably should check that this cons is a list first
     if( left->IsAtom() ) { 
         if( ((Atom*)left)->IsSymbol() ) {
             std::string head = left->AsString();
             if( head == "define" ) {
                 Frame *frame = env->Top();
-                Symbol* name = (Symbol*)((Cons*)right)->Car();
-                Data* value = ((Cons*)right)->Cadr()->Eval(env);
+                Symbol* name = (Symbol*)right->Car(); // TODO check that right->Car() is symbol before doing this
+                Data* value = right->Cadr()->Eval(env);
                 frame->AddBinding(name, value);
                 return nil;
             } 
@@ -26,7 +25,7 @@ Data* Cons::Eval(Environment *env)
                 //make procedue -- maybe move to Procedure class and add delete method
                 Cons *arglist = (Cons*)this->Cadr();
                 std::vector<Symbol*> *args = new std::vector<Symbol*>();
-                Data* code = ((Cons*)this->Cddr())->Car();
+                Data* code = this->Cddr()->Car();
                 while( !arglist->IsNil() ) {
                     args->push_back((Symbol*)arglist->Car());
                     arglist = (Cons*)arglist->Cdr();
