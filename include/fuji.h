@@ -18,6 +18,14 @@ class Exception {
         std::string GetCaller() { return caller; }
 };
 
+class NotCons : public Exception {
+    private:
+        std::string error = "Attempted list access on non-list data.";
+    public:
+        NotCons(const char * caller_, const std::string message_) : Exception(caller_, message_) { }
+}; 
+
+
 /* Data Types */
 class Environment; // Need to declare this early for Data::Eval()
 class Data { 
@@ -33,6 +41,12 @@ class Data {
         virtual bool IsAtom() { return false; }
         virtual bool IsCons() { return false; }
         virtual bool IsProcedure() { return false; }
+        virtual bool IsNil() { return false; } 
+
+        virtual Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
+        virtual Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
+        virtual Data * Cadr() { throw new NotCons("Data::Cadr", this->AsString()); }
+        virtual Data * Cddr() { throw new NotCons("Data::Cddr", this->AsString()); }
 };
 
 class Symbol; // Need to declare this early for classees Binding, Frame, Environment
@@ -83,7 +97,6 @@ class Cons : public Data {
     public:
         Cons(Data *x, Data *y) : Data() { left = x; right = y; }
         bool IsCons() { return true; }
-        virtual bool IsNil() { return false; }
         std::string AsString() { return "(cons " + left->AsString() + " " + right->AsString() + ")"; }
         Data* Eval(Environment*);
         Data* Car() { return left; }
@@ -98,10 +111,10 @@ class Nil : public Cons {
         bool IsNil() { return true; }
         std::string AsString() { return std::string("()"); }
         Data* Eval(Environment*);
-        Data* Car() { throw 3; }
-        Data* Cdr() { throw 3; }
-        Data* Cadr() { throw 3; }
-        Data* Cddr() { throw 3; }
+        Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
+        Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
+        Data * Cadr() { throw new NotCons("Data::Cadr", this->AsString()); }
+        Data * Cddr() { throw new NotCons("Data::Cddr", this->AsString()); }
 };
 
 Nil *const nil = new Nil();

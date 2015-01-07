@@ -75,7 +75,19 @@ int main(void)
     list = new Cons(proc, new Cons(new Number(100), nil));
     cout << "return value is : " << list->Eval(&env)->AsString() << endl;
 
-    
+    // test NotCons exception
+    try {
+        Symbol *s = new Symbol("s");
+        s->Car();
+    } catch (NotCons *e) {
+        cout << e->GetMessage() << " is not a cons, caller: " << e->GetCaller() << endl;
+    }
+    try {
+        nil->Cadr();    
+    } catch (NotCons *e) {
+        cout << e->GetMessage() << " is not a cons, caller: " << e->GetCaller() << endl;
+    }
+   
     cout << __FILE__ << ": all tests passed." << endl;
     exit(0);
 }
