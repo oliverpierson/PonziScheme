@@ -22,19 +22,27 @@ Data* Cons::Eval(Environment *env)
     if( left->IsAtom() ) { 
         if( ((Atom*)left)->IsSymbol() ) {
             std::string head = left->AsString();
-            if( head == "define" ) {
+            if( head == "define" ){
+               if( right->Car()->IsAtom() && ((Atom*)right->Car())->IsSymbol() ) {
                 Frame *frame = env->Top();
-                Symbol* name = (Symbol*)right->Car(); // TODO check that right->Car() is symbol before doing this
+                Symbol* name = (Symbol*)right->Car(); 
                 Data* value = right->Cadr()->Eval(env);
                 frame->AddBinding(name, value);
                 return nil;
+               } else throw new BadForm("Cons::Eval");
             } 
             else if( head == "quote" )
                 return this->Cadr();
-            else if( head == "lambda" )
-                return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr()->Car());
-            else if( left->Eval(env)->IsProcedure() )
-                return EvalProcedure((Procedure*)left->Eval(env), (Cons*)right, env);
+            else if( head == "lambda" ) {
+                if( this->Cadr()->IsCons() )
+                    return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr()->Car());
+                else throw new BadForm("Cons::Eval");
+            }
+            else if( left->Eval(env)->IsProcedure() ) {
+                if( right->IsCons() )
+                    return EvalProcedure((Procedure*)left->Eval(env), (Cons*)right, env);
+                else throw new BadForm("Cons::Eval");
+            }
         }
         throw new BadForm("Cons::Eval"); // unknown special-form
     } 
