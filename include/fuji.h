@@ -156,6 +156,7 @@ class Number : public Atom {
         Number(int i) : Atom() { value = i; }
         bool IsNumber() { return true; }
         std::string AsString() { return std::to_string(value); }
+        int GetValue() { return value; }
 };
 
 class Symbol : public Atom {
