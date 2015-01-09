@@ -61,15 +61,15 @@ SymbolTable::~SymbolTable()
 
 Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
 {
+    Environment *new_env = environment->Clone();
     Frame *frame = new Frame();
     std::vector<Symbol*>::iterator symit = args->begin();
     std::vector<Data*>::iterator valit = argvals.begin();
     for( ; symit != args->end() && valit != argvals.end(); ++symit, ++valit )
         frame->AddBinding(*symit, *valit);
-    environment->Push(frame);
-    Data *return_data = code->Eval(environment);
-    environment->Pop();
-    delete frame;
+    new_env->Push(frame);
+    Data *return_data = code->Eval(new_env);
+    //delete frame;
     return return_data;
 }
 
@@ -84,22 +84,22 @@ Data* Environment::LookupValue(Symbol *symbol)
 { 
     if( !frames.empty() ) {
         std::stack<Frame*> tempframes;
-        Frame *fp = frames.top();
+        Frame *fp = Top(); //frames.top();
         while( !fp->BindingExists(symbol) ) {
-            tempframes.push(frames.top());
-            frames.pop();
+            tempframes.push(Top());
+            Pop();
             if( frames.empty() ) {
                 // the binding doesn't exists so restore the environment and throw exception
                 while( !tempframes.empty() ) {
-                    frames.push(tempframes.top());
+                    Push(tempframes.top());
                     tempframes.pop();
                 }
                 throw new MissingBinding("Environment::LookupValue", symbol->AsString());    
             }
-            fp = frames.top();
+            fp = Top();
         }
         while( !tempframes.empty() ) {
-            frames.push(tempframes.top());
+            Push(tempframes.top());
             tempframes.pop();
         }
         return fp->LookupValue(symbol);
@@ -108,6 +108,17 @@ Data* Environment::LookupValue(Symbol *symbol)
         // environment contains no frames
         throw new MissingBinding("Environment::LookupValue", symbol->AsString());
     }
+}
+
+Environment * Environment::Clone()
+{
+    return new Environment(frames);
+}
+
+Environment::Environment(std::deque<Frame*> frames_)
+{
+    frames = std::deque<Frame*>(frames_.size());
+    frames = frames_;
 }
 
 Procedure * Procedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)

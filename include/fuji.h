@@ -3,6 +3,7 @@
 #include <stack>
 #include <map>
 #include <vector>
+#include <deque>
 
 #ifndef FUJI_H 
 #define FUJI_H 
@@ -102,12 +103,15 @@ class Frame {
 
 class Environment {
     private:
-        std::stack<Frame*> frames;
+        std::deque<Frame*> frames;
+        Environment(std::deque<Frame*>);
     public:
-        Frame* Pop() { Frame *retval = frames.top(); frames.pop(); return retval; }
-        Frame* Top() { return frames.top(); }
-        void Push(Frame* f) { frames.push(f); }
+        Environment() { };
+        Frame* Pop() { Frame *retval = Top(); frames.pop_back(); return retval; }
+        Frame* Top() { return frames.back(); }
+        void Push(Frame* f) { frames.push_back(f); }
         Data* LookupValue(Symbol *symbol);
+        Environment * Clone();
 };
 
 class Cons : public Data {
