@@ -72,6 +72,26 @@ int yywrap()
   return 1;
 }
 
+Data* NumberAdd(std::vector<Data*> args)
+{
+    if( !args.empty() ) {
+        int num_val = 0;
+        std::vector<Data*>::iterator it = args.begin();
+        for( ; it != args.end(); ++it) 
+            if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
+                num_val += ((Number*)*it)->GetValue();
+            else throw 987;
+        return new Number(num_val);
+    }
+    throw 987;
+}
+
+Data* GetRefCount(std::vector<Data*> args)
+{
+    if( !args.empty() )
+        return new Number(args[0]->GetRefs());
+    throw 987;
+}
 
 int main( int argc, char *argv[] )
 {
@@ -80,6 +100,8 @@ int main( int argc, char *argv[] )
   Data * exp;
   Environment * global_env = new Environment();
   Frame * bottom_frame = new Frame();
+  bottom_frame->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
+  bottom_frame->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
   global_env->Push(bottom_frame);
   
   printf("loading...\n");

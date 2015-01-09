@@ -4,6 +4,19 @@
 
 using namespace std;
 
+Data* f(vector<Data*> args)
+{
+    if( !args.empty() ) {
+        if( args[0]->IsAtom() && args[1]->IsAtom() ) {
+            if( ((Atom*)args[0])->IsNumber() && ((Atom*)args[1])->IsNumber() ) {
+                Data * new_num = new Number(((Number*)args[0])->GetValue() + ((Number*)args[1])->GetValue());
+                return new_num;
+            }
+        }
+    }
+    throw 987;
+}
+
 int main(void)
 {
     Cons *list = new Cons(new Number(0), nil);
@@ -98,6 +111,12 @@ int main(void)
     } catch (NotCons *e) {
         cout << e->GetMessage() << " is not a cons, caller: " << e->GetCaller() << endl;
     }
+
+    PrimitiveProcedure *prim = PrimitiveProcedure::MakeProcedure(&env, f);
+    std::vector<Data*> some_nums;
+    some_nums.push_back(new Number(1));
+    some_nums.push_back(new Number(2));
+    cout << "PrimitiveProcedure prim returns : " << prim->Apply(&env, some_nums)->AsString() << endl;
    
     cout << __FILE__ << ": all tests passed." << endl;
     exit(0);

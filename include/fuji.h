@@ -194,7 +194,16 @@ class SymbolTable {
 };
 
 /* Procedure data structures */
-class Procedure : public Data {
+class BareProcedure : public Data {
+    public:
+        virtual Data* Apply(Environment *env, std::vector<Data*> args) { throw 101; }
+        //Data* Apply(Environment *, std::vector<Data*>);
+        std::string AsString() { return std::string("#<function>"); }
+        bool IsProcedure() { return true; }
+        Data * Eval(Environment *env) { return this; }
+};
+
+class Procedure : public BareProcedure {
     private:
         Environment* environment;
         Data* code;
@@ -203,11 +212,17 @@ class Procedure : public Data {
         ~Procedure() { delete args; }
     public:
         Data* Apply(Environment *env, std::vector<Data*> args);
-        std::string AsString() { return std::string("#<function>"); }
-        bool IsProcedure() { return true; }
-        Data* Eval(Environment *env) { return this; }
         static Procedure * MakeProcedure(Environment*, Cons*, Data*);
 };
 
+class PrimitiveProcedure : public BareProcedure {
+    private:
+        Environment * environment;
+        Data * (*call_func)(std::vector<Data*>);
+        PrimitiveProcedure(Environment * env, Data * (*f)(std::vector<Data*>)) { environment = env; call_func = f; }
+    public:
+        Data* Apply(Environment *env, std::vector<Data*> args);
+        static PrimitiveProcedure * MakeProcedure(Environment*, Data * (*f)(std::vector<Data*>));
+};
 
 #endif // FUJI_H

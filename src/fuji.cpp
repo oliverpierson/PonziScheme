@@ -7,7 +7,7 @@ Data* Nil::Eval(Environment *env)
     return nil;
 }
 
-Data * EvalProcedure(Procedure * proc, Cons * arglist, Environment * env)
+Data * EvalProcedure(BareProcedure * proc, Cons * arglist, Environment * env)
 {
     std::vector<Data*> argvals;
     while( !arglist->IsNil() ) {
@@ -121,3 +121,12 @@ Procedure * Procedure::MakeProcedure(Environment *env, Cons *arglist, Data *code
     return proc;
 }
 
+PrimitiveProcedure * PrimitiveProcedure::MakeProcedure(Environment *env, Data * (*func)(std::vector<Data*>))
+{
+    return new PrimitiveProcedure(env, func);
+}
+
+Data * PrimitiveProcedure::Apply(Environment *env, std::vector<Data*> args)
+{
+    return call_func(args);
+}
