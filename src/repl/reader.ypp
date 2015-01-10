@@ -134,6 +134,13 @@ Data* Equals(std::vector<Data*> args)
     throw 987;
 }
 
+Data* ReaderCons(std::vector<Data*> args)
+{
+    if( args.size() == 2 )
+        return new Cons(args[0], args[1]);
+    throw 987;
+}
+
 int main( int argc, char *argv[] )
 {
 //  Datum *exp;
@@ -144,6 +151,7 @@ int main( int argc, char *argv[] )
   bottom_frame->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
   bottom_frame->AddBinding(symbol_table->InternSymbol("-"), PrimitiveProcedure::MakeProcedure(global_env, NumberMinus));
   bottom_frame->AddBinding(symbol_table->InternSymbol("*"), PrimitiveProcedure::MakeProcedure(global_env, NumberMul));
+  bottom_frame->AddBinding(symbol_table->InternSymbol("cons"), PrimitiveProcedure::MakeProcedure(global_env, ReaderCons));
   bottom_frame->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
   bottom_frame->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
   global_env->Push(bottom_frame);
