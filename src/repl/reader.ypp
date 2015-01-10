@@ -93,6 +93,15 @@ Data* GetRefCount(std::vector<Data*> args)
     throw 987;
 }
 
+Data* Equals(std::vector<Data*> args)
+{
+    if( !args.empty() )
+        if( args[0]->IsAtom() && args[1]->IsAtom() )
+            if( ((Atom*)args[0])->IsNumber() && ((Atom*)args[1])->IsNumber() )
+                return new Bool(((Number*)args[0])->GetValue() == ((Number*)args[1])->GetValue());
+    throw 987;
+}
+
 int main( int argc, char *argv[] )
 {
 //  Datum *exp;
@@ -102,6 +111,7 @@ int main( int argc, char *argv[] )
   Frame * bottom_frame = new Frame();
   bottom_frame->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
   bottom_frame->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
+  bottom_frame->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
   global_env->Push(bottom_frame);
   
   printf("loading...\n");

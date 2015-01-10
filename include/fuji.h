@@ -42,6 +42,7 @@ class Data {
         Data() { refs = 0; }
         virtual Data* Eval(Environment* env) { return NULL; } // throw error
         virtual std::string AsString() { return std::string("Error"); } // throw error if this is reached 
+        virtual bool Equals(Data*, Data*) { return false; }
         int IncRefs() { return ++refs; }
         int DecRefs() { if(refs > 0) refs--; return refs; } //else throw error 
         int GetRefs() { return refs; }
@@ -51,6 +52,7 @@ class Data {
         virtual bool IsCons() { return false; }
         virtual bool IsProcedure() { return false; }
         virtual bool IsNil() { return false; } 
+        virtual bool IsBool() { return false; }
 
         virtual Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
         virtual Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
@@ -180,6 +182,8 @@ class Bool : public Atom {
         Bool(bool b) : Atom() { value = b; }
         bool IsBool() { return true; }
         std::string AsString() { return std::to_string(value); }
+        bool IsTrue() { return value ? true : false; }
+        bool IsFalse() { return !IsTrue(); } 
 };
 
 /* Symbol Table */

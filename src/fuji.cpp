@@ -20,7 +20,12 @@ Data * EvalProcedure(BareProcedure * proc, Cons * arglist, Environment * env)
 Data* Cons::Eval(Environment *env)
 {
     std::string head = left->AsString();
-    if( head == "define" ){
+    if( head == "if" && this->Cadr()->Eval(env)->IsBool() ) {
+        if( ((Bool*)this->Cadr()->Eval(env))->IsTrue() )
+            return this->Cdr()->Cadr()->Eval(env);
+        else return this->Cddr()->Cadr()->Eval(env);
+    }
+    else if( head == "define" ){
        if( right->Car()->IsAtom() && ((Atom*)right->Car())->IsSymbol() ) {
         Frame *frame = env->Top();
         Symbol* name = (Symbol*)right->Car(); 
