@@ -72,6 +72,11 @@ int yywrap()
   return 1;
 }
 
+class ReaderExcept : public Exception {
+    public:
+        ReaderExcept(const char *caller_, const std::string message_) : Exception(caller_, message_) {}
+};
+
 Data* NumberAdd(std::vector<Data*> args)
 {
     if( !args.empty() ) {
@@ -80,10 +85,10 @@ Data* NumberAdd(std::vector<Data*> args)
         for( ; it != args.end(); ++it) 
             if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
                 num_val += ((Number*)*it)->GetValue();
-            else throw 987;
+            else throw new ReaderExcept("NumberAdd","");
         return new Number(num_val);
     }
-    throw 987;
+    throw new ReaderExcept("NumberAdd","");
 }
 
 Data* NumberMinus(std::vector<Data*> args)
@@ -97,11 +102,11 @@ Data* NumberMinus(std::vector<Data*> args)
             for( ; it != args.end(); ++it) 
                 if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
                     num_val -= ((Number*)*it)->GetValue();
-                else throw 987;
+                else throw new ReaderExcept("NumberMinus","");
             return new Number(num_val);
         }
     }
-    throw 987;
+    throw new ReaderExcept("NumberMinus","");
 }
 
 Data* NumberMul(std::vector<Data*> args)
@@ -112,17 +117,17 @@ Data* NumberMul(std::vector<Data*> args)
         for( ; it != args.end(); ++it) 
             if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
                 num_val *= ((Number*)*it)->GetValue();
-            else throw 987;
+            else throw new ReaderExcept("NumberMul","");
         return new Number(num_val);
     }
-    throw 987;
+    throw new ReaderExcept("NumberMul","");
 }
 
 Data* GetRefCount(std::vector<Data*> args)
 {
     if( !args.empty() )
         return new Number(args[0]->GetRefs());
-    throw 987;
+    throw new ReaderExcept("GetRefCount","");
 }
 
 Data* Equals(std::vector<Data*> args)
@@ -131,14 +136,14 @@ Data* Equals(std::vector<Data*> args)
         if( args[0]->IsAtom() && args[1]->IsAtom() )
             if( ((Atom*)args[0])->IsNumber() && ((Atom*)args[1])->IsNumber() )
                 return new Bool(((Number*)args[0])->GetValue() == ((Number*)args[1])->GetValue());
-    throw 987;
+    throw new ReaderExcept("Equals","");
 }
 
 Data* ReaderCons(std::vector<Data*> args)
 {
     if( args.size() == 2 )
         return new Cons(args[0], args[1]);
-    throw 987;
+    throw new ReaderExcept("ReaderCons","");
 }
 
 int main( int argc, char *argv[] )
@@ -176,6 +181,8 @@ int main( int argc, char *argv[] )
         std::cout << exp->Eval(global_env)->AsString() << std::endl;
     } catch (MissingBinding *e) {
         std::cout << "Missing Binding for " << e->GetMessage() << ", caller: " << e->GetCaller() << std::endl;
+    } catch (ReaderExcept *e) {
+        std::cout << "Reader encountered an error in " << e->GetCaller() << std::endl;
     }
     printf("\n");
     printf("\n>> ");
