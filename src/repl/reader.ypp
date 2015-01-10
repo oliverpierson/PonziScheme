@@ -86,6 +86,38 @@ Data* NumberAdd(std::vector<Data*> args)
     throw 987;
 }
 
+Data* NumberMinus(std::vector<Data*> args)
+{
+    if( !args.empty() ) {
+        int num_val = 0;
+        std::vector<Data*>::iterator it = args.begin();
+        if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) {
+            num_val = ((Number*)*it)->GetValue();
+            ++it;
+            for( ; it != args.end(); ++it) 
+                if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
+                    num_val -= ((Number*)*it)->GetValue();
+                else throw 987;
+            return new Number(num_val);
+        }
+    }
+    throw 987;
+}
+
+Data* NumberMul(std::vector<Data*> args)
+{
+    if( !args.empty() ) {
+        int num_val = 1;
+        std::vector<Data*>::iterator it = args.begin();
+        for( ; it != args.end(); ++it) 
+            if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
+                num_val *= ((Number*)*it)->GetValue();
+            else throw 987;
+        return new Number(num_val);
+    }
+    throw 987;
+}
+
 Data* GetRefCount(std::vector<Data*> args)
 {
     if( !args.empty() )
@@ -110,6 +142,8 @@ int main( int argc, char *argv[] )
   Environment * global_env = new Environment();
   Frame * bottom_frame = new Frame();
   bottom_frame->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
+  bottom_frame->AddBinding(symbol_table->InternSymbol("-"), PrimitiveProcedure::MakeProcedure(global_env, NumberMinus));
+  bottom_frame->AddBinding(symbol_table->InternSymbol("*"), PrimitiveProcedure::MakeProcedure(global_env, NumberMul));
   bottom_frame->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
   bottom_frame->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
   global_env->Push(bottom_frame);
