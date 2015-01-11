@@ -146,6 +146,13 @@ Data* ReaderCons(std::vector<Data*> args)
     throw new ReaderExcept("ReaderCons","");
 }
 
+Data* Null(std::vector<Data*> args)
+{
+    if( args.size() == 1 )
+        return new Bool(args[0]->IsNil());
+    throw new ReaderExcept("Null","");
+}
+
 int main( int argc, char *argv[] )
 {
 //  Datum *exp;
@@ -153,6 +160,8 @@ int main( int argc, char *argv[] )
   Data * exp;
   Environment * global_env = new Environment();
   Frame * bottom_frame = new Frame();
+  bottom_frame->AddBinding(symbol_table->InternSymbol("nil"), nil);
+  bottom_frame->AddBinding(symbol_table->InternSymbol("null?"), PrimitiveProcedure::MakeProcedure(global_env, Null));
   bottom_frame->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
   bottom_frame->AddBinding(symbol_table->InternSymbol("-"), PrimitiveProcedure::MakeProcedure(global_env, NumberMinus));
   bottom_frame->AddBinding(symbol_table->InternSymbol("*"), PrimitiveProcedure::MakeProcedure(global_env, NumberMul));
