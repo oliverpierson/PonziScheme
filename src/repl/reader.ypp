@@ -36,7 +36,8 @@ list:
 ;
 
 sexp:
-atom { $$ = cons($1, NIL); }
+/* empty */ { $$ = NIL; }
+| atom { $$ = cons($1, NIL); }
 | list { $$ = cons($1, NIL); }
 | atom sexp { $$ = cons($1, $2); }
 | list sexp { $$ = cons($1, $2); }
