@@ -41,7 +41,7 @@ Data* Cons::Eval(Environment *env)
         return this->Cadr();
     else if( head == "lambda" ) {
         if( this->Cadr()->IsCons() )
-            return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr()->Car());
+            return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr());
         else throw new BadForm("Cons::Eval");
     }
     else if( left->Eval(env)->IsProcedure() ) {
@@ -68,7 +68,12 @@ Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
     for( ; symit != args->end() && valit != argvals.end(); ++symit, ++valit )
         frame->AddBinding(*symit, *valit);
     new_env->Push(frame);
-    Data *return_data = code->Eval(new_env);
+    Data *return_data;
+    Data *current_code = code;
+    do {
+        return_data = current_code->Car()->Eval(new_env);
+        current_code = current_code->Cdr();
+    } while( !current_code->IsNil() );
     //delete frame;
     return return_data;
 }
