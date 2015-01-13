@@ -30,7 +30,10 @@ Data* Cons::Eval(Environment *env)
         Frame *frame = env->Top();
         Symbol* name = (Symbol*)right->Car(); 
         Data* value = right->Cadr()->Eval(env);
-        frame->AddBinding(name, value);
+        if( frame->BindingExists(name) )
+            frame->UpdateBinding(name, value);
+        else 
+            frame->AddBinding(name, value);
         return nil;
        } else throw new BadForm("Cons::Eval");
     } 

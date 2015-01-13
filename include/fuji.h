@@ -92,8 +92,15 @@ class Frame {
             if( !BindingExists(s) ) {
                 bindings[s] = v;
                 v->IncRefs();
-            }
+            } else throw 1234;
         } 
+        void UpdateBinding(Symbol *s, Data *v)
+        {
+            if( BindingExists(s) ) {
+                bindings[s] = v;
+                v->IncRefs();
+            } else throw 1234;
+        }
         bool BindingExists(Symbol *symbol)
         {
             if( bindings.find(symbol) == bindings.end() )
