@@ -1,7 +1,7 @@
 INCLUDE=./include
 
 mceval.o: clean
-	g++ -c src/fuji.cpp -o lib/fuji.o -I$(INCLUDE)
+	g++ -c src/ponzi.cpp -o lib/ponzi.o -I$(INCLUDE)
 
 clean:
 	rm -f lib/*.o

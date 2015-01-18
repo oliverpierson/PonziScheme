@@ -2,7 +2,7 @@
 #define __READER_H__
 
 #include <stdio.h>
-#include "fuji.h"
+#include "ponzi.h"
 
 #define INT long int
 

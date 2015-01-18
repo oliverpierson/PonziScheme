@@ -10,7 +10,7 @@ lex.yy.o:
 	g++ -c lex.yy.c -I$(INCLUDE)
 
 reader: reader.tab.o lex.yy.o
-	g++ reader.tab.o lex.yy.o $(LIB)/fuji.o -I$(INCLUDE) -o reader
+	g++ reader.tab.o lex.yy.o $(LIB)/ponzi.o -I$(INCLUDE) -o reader
 
 clean:
 	rm -rf *.tab.[ch]pp

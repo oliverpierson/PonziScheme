@@ -1,5 +1,5 @@
 #include <iostream>
-#include "fuji.h"
+#include "ponzi.h"
 #include <assert.h>
 
 using namespace std;

@@ -46,7 +46,7 @@ sexp:
 ;
 
 %%
-#include "fuji.h"
+#include "ponzi.h"
 
 Data* cons(Data * x, Data * y)
 {
