@@ -26,15 +26,24 @@ Data* Cons::Eval(Environment *env)
         else return this->Cddr()->Cadr()->Eval(env);
     }
     else if( head == "define" ){
-       if( right->Car()->IsAtom() && ((Atom*)right->Car())->IsSymbol() ) {
-        Frame *frame = env->Top();
-        Symbol* name = (Symbol*)right->Car(); 
-        Data* value = right->Cadr()->Eval(env);
-        if( frame->BindingExists(name) )
-            frame->UpdateBinding(name, value);
-        else 
-            frame->AddBinding(name, value);
-        return nil;
+        if( this->Cadr()->IsAtom() && ((Atom*)this->Cadr())->IsSymbol() ) {
+            Frame *frame = env->Top();
+            Symbol* name = (Symbol*)right->Car(); 
+            Data* value = right->Cadr()->Eval(env);
+            if( frame->BindingExists(name) )
+                frame->UpdateBinding(name, value);
+            else 
+                frame->AddBinding(name, value);
+            return value;
+       } else if( this->Cadr()->IsCons() ) { //right->Car()->IsCons() ) {
+           Procedure * newproc = Procedure::MakeProcedure(env, (Cons*)this->Cadr()->Cdr(), this->Cddr());
+           Frame * frame = env->Top();
+           Symbol * name = (Symbol*)this->Cadr()->Car();
+           if( frame->BindingExists(name) )
+               frame->UpdateBinding(name, newproc);
+           else
+               frame->AddBinding(name, newproc);
+           return newproc;
        } else throw new BadForm("Cons::Eval");
     } 
     else if( head == "quote" )
@@ -44,8 +53,8 @@ Data* Cons::Eval(Environment *env)
             return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr());
         else throw new BadForm("Cons::Eval");
     }
-    else if( left->Eval(env)->IsProcedure() ) {
-        if( right->IsCons() )
+    else if( this->Car()->Eval(env)->IsProcedure() ) {
+        if( this->Cdr()->IsCons() )
             return EvalProcedure((Procedure*)left->Eval(env), (Cons*)right, env);
         else throw new BadForm("Cons::Eval");
     }
