@@ -130,7 +130,21 @@ class Cons : public Data {
     public:
         Cons(Data *x, Data *y) : Data() { left = x; right = y; }
         bool IsCons() { return true; }
-        std::string AsString() { return "(cons " + left->AsString() + " " + right->AsString() + ")"; }
+        std::string AsString() 
+        {
+            std::string list_str("(");
+            for(Data * it = this; !it->IsNil(); it = it->Cdr() ) { 
+                list_str += it->Car()->AsString() + " ";
+                if( it->Cdr()->IsAtom() ) { // in this case, this is a cons cell not a list
+                    list_str += ". ";
+                    list_str += it->Cdr()->AsString() + " ";
+                    break;
+                }
+            }
+            list_str.pop_back(); // remove trailing space after last element in the list
+            list_str += ")";
+            return list_str;
+        }
         Data* Eval(Environment*);
         Data* Car() { return left; }
         Data* Cdr() { return right; }
