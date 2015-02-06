@@ -170,6 +170,7 @@ int main( int argc, char *argv[] )
   bottom_frame->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
   bottom_frame->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
   global_env->Push(bottom_frame);
+  global_env->IncRefs();
   
   printf("loading...\n");
 //  if ( argc > 1 )
@@ -189,6 +190,8 @@ int main( int argc, char *argv[] )
     //std::cout << std::endl << exp->AsString() << std::endl;
     try { 
         std::cout << exp->Eval(global_env)->AsString() << std::endl;
+        exp->IncRefs();
+        exp->DecRefs();
     } catch (MissingBinding *e) {
         std::cout << "Missing Binding for " << e->GetMessage() << ", caller: " << e->GetCaller() << std::endl;
     } catch (ReaderExcept *e) {
@@ -198,6 +201,7 @@ int main( int argc, char *argv[] )
     printf("\n>> ");
     yyparse(&exp);
   }
+  global_env->DecRefs();
   printf("\nGood-bye.\n");
   exit(0);
 }

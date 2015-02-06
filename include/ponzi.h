@@ -8,6 +8,14 @@
 #ifndef FUJI_H 
 #define FUJI_H 
 
+class ManagedMemory {
+    public:
+        virtual void IncRefs() = 0;
+        virtual void DecRefs() = 0;
+        virtual void SelfDestruct() = 0;
+        virtual ~ManagedMemory() {}
+};
+
 class Exception {
     private:
         std::string error;
@@ -35,7 +43,7 @@ class BadForm : public Exception {
 
 /* Data Types */
 class Environment; // Need to declare this early for Data::Eval()
-class Data { 
+class Data : public ManagedMemory { 
     private:
         int refs;
     public:
@@ -43,8 +51,13 @@ class Data {
         virtual Data* Eval(Environment* env) { return NULL; } // throw error
         virtual std::string AsString() { return std::string("Error"); } // throw error if this is reached 
         virtual bool Equals(Data*, Data*) { return false; }
-        int IncRefs() { return ++refs; }
-        int DecRefs() { if(refs > 0) refs--; return refs; } //else throw error 
+        void IncRefs() { ++refs; }
+        void DecRefs() 
+        { 
+            if(refs > 0) refs--;  //else throw error 
+            if(refs == 0) this->SelfDestruct();
+        }
+        void SelfDestruct() { std::cout << "deleting data..." << this->AsString() << std::endl; delete this; }
         int GetRefs() { return refs; }
 
         // some builtins -- should be a predicate for each builtin datatype
@@ -77,10 +90,19 @@ class MissingBinding : public Exception {
         MissingBinding(const char * caller_, const std::string message_) : Exception(caller_, message_) { }
 };
 
-class Frame {
+class Frame : public ManagedMemory {
     private:
         std::map<Symbol*, Data*> bindings;
+        int refs;
     public:
+        Frame() { refs = 0; }
+        void IncRefs() { refs++; }
+        void DecRefs() 
+        { 
+            if( refs > 0 ) --refs; /* else throw */
+            if( refs == 0 ) this->SelfDestruct();
+        }
+        void SelfDestruct() { std::cout << "deleting frame... " << std::endl; delete this; }
         ~Frame()
         {
             for(std::map<Symbol*, Data*>::iterator it = bindings.begin();
@@ -97,6 +119,7 @@ class Frame {
         void UpdateBinding(Symbol *s, Data *v)
         {
             if( BindingExists(s) ) {
+                bindings[s]->DecRefs();
                 bindings[s] = v;
                 v->IncRefs();
             } else throw 1234;
@@ -110,15 +133,24 @@ class Frame {
         Data* LookupValue(Symbol *symbol);
 };
 
-class Environment {
+class Environment : public ManagedMemory {
     private:
         std::deque<Frame*> frames;
         Environment(std::deque<Frame*>);
+        int refs;
     public:
-        Environment() { };
-        Frame* Pop() { Frame *retval = Top(); frames.pop_back(); return retval; }
+        Environment() { refs = 0; }
+        ~Environment();
+        void IncRefs() { ++refs; }
+        void DecRefs() 
+        { 
+            if( refs > 0 ) --refs; // else throw
+            if( refs == 0 ) this->SelfDestruct(); 
+        }
+        void SelfDestruct() { std::cout << "deleting environment... " << std::endl; delete this; }
+        Frame* Pop() { Frame *retval = Top(); frames.pop_back(); retval->DecRefs(); return retval; }
         Frame* Top() { return frames.back(); }
-        void Push(Frame* f) { frames.push_back(f); }
+        void Push(Frame* f) { frames.push_back(f); f->IncRefs(); }
         Data* LookupValue(Symbol *symbol);
         Environment * Clone();
 };
@@ -128,7 +160,8 @@ class Cons : public Data {
         Data *left;
         Data *right; 
     public:
-        Cons(Data *x, Data *y) : Data() { left = x; right = y; }
+        Cons(Data *x, Data *y) : Data() { left = x; right = y; x->IncRefs(); y->IncRefs(); }
+        ~Cons() { left->DecRefs(); right->DecRefs(); std::cout << "cons deleted." << std::endl;}
         bool IsCons() { return true; }
         std::string AsString() 
         {
@@ -151,20 +184,6 @@ class Cons : public Data {
         Data* Cadr() { return right->Car(); }
         Data* Cddr() { return right->Cdr(); }
 };
-
-class Nil : public Cons {
-    public:
-        Nil() : Cons(NULL, NULL) { }
-        bool IsNil() { return true; }
-        std::string AsString() { return std::string("()"); }
-        Data* Eval(Environment*);
-        Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
-        Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
-        Data * Cadr() { throw new NotCons("Data::Cadr", this->AsString()); }
-        Data * Cddr() { throw new NotCons("Data::Cddr", this->AsString()); }
-};
-
-Nil *const nil = new Nil();
 
 class Atom : public Data {
     public:
@@ -191,6 +210,7 @@ class Symbol : public Atom {
         std::string name;
     public:
         Symbol(std::string s) : Atom() { name = s; }
+        void SelfDestruct() { std::cout << "symbol not deleted... " << std::endl; /* don't delete symbols => do nothing */ }
         bool IsSymbol() { return true; }
         std::string AsString() { return name; }
         Data* Eval(Environment* env) { return env->LookupValue(this); }
@@ -206,6 +226,20 @@ class Bool : public Atom {
         bool IsTrue() { return value ? true : false; }
         bool IsFalse() { return !IsTrue(); } 
 };
+
+class Nil : public Cons {
+    public:
+        Nil() : Cons(new Number(0), new Number(0)) { }
+        bool IsNil() { return true; }
+        std::string AsString() { return std::string("()"); }
+        Data* Eval(Environment*);
+        Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
+        Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
+        Data * Cadr() { throw new NotCons("Data::Cadr", this->AsString()); }
+        Data * Cddr() { throw new NotCons("Data::Cddr", this->AsString()); }
+};
+
+Nil *const nil = new Nil();
 
 /* Symbol Table */
 class SymbolTable {
@@ -225,6 +259,7 @@ class SymbolTable {
 /* Procedure data structures */
 class BareProcedure : public Data {
     public:
+        BareProcedure() : Data() { }
         virtual Data* Apply(Environment *env, std::vector<Data*> args) { throw 101; }
         //Data* Apply(Environment *, std::vector<Data*>);
         std::string AsString() { return std::string("#<function>"); }
@@ -237,8 +272,13 @@ class Procedure : public BareProcedure {
         Environment* environment;
         Data* code;
         std::vector<Symbol*> *args;
-        Procedure(Environment *env, Data* code_, std::vector<Symbol*> *args_) { environment = env; code = code_; args = args_; }
-        ~Procedure() { delete args; }
+        Procedure(Environment *env, Data* code_, std::vector<Symbol*> *args_) : BareProcedure() 
+        { 
+            environment = env; code = code_; args = args_; 
+            code->IncRefs(); 
+            env->IncRefs();
+        }
+        ~Procedure() { delete args; code->DecRefs(); environment->DecRefs(); }
     public:
         Data* Apply(Environment *env, std::vector<Data*> args);
         static Procedure * MakeProcedure(Environment*, Cons*, Data*);
@@ -248,7 +288,7 @@ class PrimitiveProcedure : public BareProcedure {
     private:
         Environment * environment;
         Data * (*call_func)(std::vector<Data*>);
-        PrimitiveProcedure(Environment * env, Data * (*f)(std::vector<Data*>)) { environment = env; call_func = f; }
+        PrimitiveProcedure(Environment * env, Data * (*f)(std::vector<Data*>)) : BareProcedure() { environment = env; call_func = f; }
     public:
         Data* Apply(Environment *env, std::vector<Data*> args);
         static PrimitiveProcedure * MakeProcedure(Environment*, Data * (*f)(std::vector<Data*>));

@@ -79,10 +79,12 @@ Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
     new_env->Push(frame);
     Data *return_data;
     Data *current_code = code;
+    new_env->IncRefs();
     do {
         return_data = current_code->Car()->Eval(new_env);
         current_code = current_code->Cdr();
     } while( !current_code->IsNil() );
+    new_env->DecRefs();
     //delete frame;
     return return_data;
 }
@@ -101,11 +103,13 @@ Data* Environment::LookupValue(Symbol *symbol)
         Frame *fp = Top(); //frames.top();
         while( !fp->BindingExists(symbol) ) {
             tempframes.push(Top());
-            Pop();
+            //Pop();
+            frames.pop_back();
             if( frames.empty() ) {
                 // the binding doesn't exists so restore the environment and throw exception
                 while( !tempframes.empty() ) {
-                    Push(tempframes.top());
+                    //Push(tempframes.top());
+                    frames.push_back(tempframes.top());
                     tempframes.pop();
                 }
                 throw new MissingBinding("Environment::LookupValue", symbol->AsString());    
@@ -113,7 +117,8 @@ Data* Environment::LookupValue(Symbol *symbol)
             fp = Top();
         }
         while( !tempframes.empty() ) {
-            Push(tempframes.top());
+            //Push(tempframes.top());
+            frames.push_back(tempframes.top());
             tempframes.pop();
         }
         return fp->LookupValue(symbol);
@@ -133,6 +138,16 @@ Environment::Environment(std::deque<Frame*> frames_)
 {
     frames = std::deque<Frame*>(frames_.size());
     frames = frames_;
+    std::deque<Frame*>::iterator it;
+    for( it = frames.begin(); it != frames.end(); ++it )
+        (*it)->IncRefs();
+}
+
+Environment::~Environment()
+{
+    std::deque<Frame*>::iterator it;
+    for( it = frames.begin(); it != frames.end(); ++it )
+        (*it)->DecRefs();
 }
 
 Procedure * Procedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)
