@@ -247,9 +247,9 @@ class SymbolTable {
 };
 
 /* Procedure data structures */
-class BareProcedure : public Data {
+class Procedure : public Data {
     public:
-        BareProcedure() : Data() { }
+        Procedure() : Data() { }
         virtual Data* Apply(Environment *env, std::vector<Data*> args) { throw 101; }
         //Data* Apply(Environment *, std::vector<Data*>);
         std::string AsString() { return std::string("#<function>"); }
@@ -257,28 +257,28 @@ class BareProcedure : public Data {
         Data * Eval(Environment *env) { return this; }
 };
 
-class Procedure : public BareProcedure {
+class SchemeProcedure : public Procedure {
     private:
         Environment* environment;
         Data* code;
         std::vector<Symbol*> *args;
-        Procedure(Environment *env, Data* code_, std::vector<Symbol*> *args_) : BareProcedure() 
+        SchemeProcedure(Environment *env, Data* code_, std::vector<Symbol*> *args_) : Procedure() 
         { 
             environment = env; code = code_; args = args_; 
             code->IncRefs(); 
             env->IncRefs();
         }
-        ~Procedure() { delete args; code->DecRefs(); environment->DecRefs(); }
+        ~SchemeProcedure() { delete args; code->DecRefs(); environment->DecRefs(); }
     public:
         Data* Apply(Environment *env, std::vector<Data*> args);
-        static Procedure * MakeProcedure(Environment*, Cons*, Data*);
+        static SchemeProcedure * MakeProcedure(Environment*, Cons*, Data*);
 };
 
-class PrimitiveProcedure : public BareProcedure {
+class PrimitiveProcedure : public Procedure {
     private:
         Environment * environment;
         Data * (*call_func)(std::vector<Data*>);
-        PrimitiveProcedure(Environment * env, Data * (*f)(std::vector<Data*>)) : BareProcedure() { environment = env; call_func = f; }
+        PrimitiveProcedure(Environment * env, Data * (*f)(std::vector<Data*>)) : Procedure() { environment = env; call_func = f; }
     public:
         Data* Apply(Environment *env, std::vector<Data*> args);
         static PrimitiveProcedure * MakeProcedure(Environment*, Data * (*f)(std::vector<Data*>));

@@ -7,7 +7,7 @@ Data* Nil::Eval(Environment *env)
     return nil;
 }
 
-Data * EvalProcedure(BareProcedure * proc, Cons * arglist, Environment * env)
+Data * EvalProcedure(Procedure * proc, Cons * arglist, Environment * env)
 {
     std::vector<Data*> argvals;
     while( !arglist->IsNil() ) {
@@ -35,7 +35,7 @@ Data* Cons::Eval(Environment *env)
                 env->AddBinding(name, value);
             return value;
        } else if( this->Cadr()->IsCons() ) { //right->Car()->IsCons() ) {
-           Procedure * newproc = Procedure::MakeProcedure(env, (Cons*)this->Cadr()->Cdr(), this->Cddr());
+           SchemeProcedure * newproc = SchemeProcedure::MakeProcedure(env, (Cons*)this->Cadr()->Cdr(), this->Cddr());
            Symbol * name = (Symbol*)this->Cadr()->Car();
            if( env->BindingExists(name) )
                env->UpdateBinding(name, newproc);
@@ -48,12 +48,12 @@ Data* Cons::Eval(Environment *env)
         return this->Cadr();
     else if( head == "lambda" ) {
         if( this->Cadr()->IsCons() )
-            return Procedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr());
+            return SchemeProcedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr());
         else throw new BadForm("Cons::Eval");
     }
     else if( this->Car()->Eval(env)->IsProcedure() ) {
         if( this->Cdr()->IsCons() )
-            return EvalProcedure((Procedure*)left->Eval(env), (Cons*)right, env);
+            return EvalProcedure((SchemeProcedure*)left->Eval(env), (Cons*)right, env);
         else throw new BadForm("Cons::Eval");
     }
     throw new BadForm("Cons::Eval"); // unknown special-form
@@ -66,7 +66,7 @@ SymbolTable::~SymbolTable()
     }
 }
 
-Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
+Data* SchemeProcedure::Apply(Environment *current_env, std::vector<Data*> argvals)
 {
     Environment *new_env = new Environment(environment);
     std::vector<Symbol*>::iterator symit = args->begin();
@@ -100,14 +100,14 @@ Data* Environment::LookupValue(Symbol *symbol)
     else throw new MissingBinding("Environment::LookupValue", symbol->AsString());
 }
 
-Procedure * Procedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)
+SchemeProcedure * SchemeProcedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)
 {
     std::vector<Symbol*> *argvec = new std::vector<Symbol*>();
     while( !arglist->IsNil() ) {
         argvec->push_back((Symbol*)arglist->Car());
         arglist = (Cons*)arglist->Cdr();
     }
-    Procedure *proc = new Procedure(env, codelist, argvec);
+    SchemeProcedure *proc = new SchemeProcedure(env, codelist, argvec);
     return proc;
 }
 
