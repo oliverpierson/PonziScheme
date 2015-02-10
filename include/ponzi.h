@@ -5,8 +5,8 @@
 #include <vector>
 #include <deque>
 
-#ifndef FUJI_H 
-#define FUJI_H 
+#ifndef PONZI_H
+#define PONZI_H
 
 class ManagedMemory {
     public:
@@ -284,4 +284,4 @@ class PrimitiveProcedure : public BareProcedure {
         static PrimitiveProcedure * MakeProcedure(Environment*, Data * (*f)(std::vector<Data*>));
 };
 
-#endif // FUJI_H
+#endif // PONZI_H 

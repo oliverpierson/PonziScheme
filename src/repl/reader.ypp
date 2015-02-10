@@ -156,8 +156,6 @@ Data* Null(std::vector<Data*> args)
 
 int main( int argc, char *argv[] )
 {
-//  Datum *exp;
-//  Frame *globalEnv = initFrame(NIL); /* global env frame */
   Data * exp;
   Environment * global_env = new Environment();
   global_env->AddBinding(symbol_table->InternSymbol("nil"), nil);
@@ -171,21 +169,9 @@ int main( int argc, char *argv[] )
   global_env->IncRefs();
   
   printf("loading...\n");
-//  if ( argc > 1 )
-//    symsize = atoi(argv[1]);
-//  printf("SymbolTable created with max of %d symbols.\n", symsize);
-//  addBinding(globalEnv, internSymbol("+", symbol_table), makePrimProc(&add));
-//  addBinding(globalEnv, internSymbol("*", symbol_table), makePrimProc(&mul));
-//  addBinding(globalEnv, internSymbol("-", symbol_table), makePrimProc(&minus));
-//  addBinding(globalEnv, internSymbol("car", symbol_table), makePrimProc(&extCar));
-//  addBinding(globalEnv, internSymbol("cdr", symbol_table), makePrimProc(&extCdr));
-//  addBinding(globalEnv, internSymbol("=", symbol_table), makePrimProc(&intEqual));
-//  addBinding(globalEnv, internSymbol("*mem-usage*", symbol_table), exportInt(&memUsed));
   printf(">> ");
   yyparse(&exp);
   while ( yychar != YYEOF ) {
- //   printDatum(eval(globalEnv, exp));
-    //std::cout << std::endl << exp->AsString() << std::endl;
     try { 
         std::cout << exp->Eval(global_env)->AsString() << std::endl;
         exp->IncRefs();
