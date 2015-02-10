@@ -57,7 +57,7 @@ class Data : public ManagedMemory {
             if(refs > 0) refs--;  //else throw error 
             if(refs == 0) this->SelfDestruct();
         }
-        void SelfDestruct() { std::cout << "deleting data..." << this->AsString() << std::endl; delete this; }
+        void SelfDestruct() { delete this; }
         int GetRefs() { return refs; }
 
         // some builtins -- should be a predicate for each builtin datatype
@@ -99,7 +99,6 @@ class Frame {
         {
             for(std::map<Symbol*, Data*>::iterator it = bindings.begin();
                 it != bindings.end(); ++it) {
-                std::cout << "DecRef " << it->second->AsString() << std::endl;
                 it->second->DecRefs();
             }
         }
@@ -137,7 +136,7 @@ class Environment : private Frame, public ManagedMemory {
         ~Environment() { if( base_env != NULL ) base_env->DecRefs(); }
         void IncRefs() { ++refs; }
         void DecRefs() { --refs; if( refs == 0 ) SelfDestruct(); }
-        void SelfDestruct() { std::cout << "deleting environment... " << std::endl; delete this; }
+        void SelfDestruct() { delete this; }
         void AddBinding(Symbol *sym, Data *value) { Frame::AddBinding(sym, value); }
         void UpdateBinding(Symbol *sym, Data *value) { Frame::UpdateBinding(sym, value); }
         bool BindingExists(Symbol *s) { return Frame::BindingExists(s); }
@@ -151,7 +150,7 @@ class Cons : public Data {
         Data *right; 
     public:
         Cons(Data *x, Data *y) : Data() { left = x; right = y; x->IncRefs(); y->IncRefs(); }
-        ~Cons() { left->DecRefs(); right->DecRefs(); std::cout << "cons deleted." << std::endl;}
+        ~Cons() { left->DecRefs(); right->DecRefs(); }
         bool IsCons() { return true; }
         std::string AsString() 
         {
@@ -200,7 +199,7 @@ class Symbol : public Atom {
         std::string name;
     public:
         Symbol(std::string s) : Atom() { name = s; }
-        void SelfDestruct() { std::cout << "symbol not deleted... " << std::endl; /* don't delete symbols => do nothing */ }
+        void SelfDestruct() { /* don't delete symbols => do nothing */ }
         bool IsSymbol() { return true; }
         std::string AsString() { return name; }
         Data* Eval(Environment* env) { return env->LookupValue(this); }
