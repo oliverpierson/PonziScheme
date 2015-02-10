@@ -90,24 +90,18 @@ class MissingBinding : public Exception {
         MissingBinding(const char * caller_, const std::string message_) : Exception(caller_, message_) { }
 };
 
-class Frame : public ManagedMemory {
+class Frame {
     private:
         std::map<Symbol*, Data*> bindings;
         int refs;
     public:
-        Frame() { refs = 0; }
-        void IncRefs() { refs++; }
-        void DecRefs() 
-        { 
-            if( refs > 0 ) --refs; /* else throw */
-            if( refs == 0 ) this->SelfDestruct();
-        }
-        void SelfDestruct() { std::cout << "deleting frame... " << std::endl; delete this; }
         ~Frame()
         {
             for(std::map<Symbol*, Data*>::iterator it = bindings.begin();
-                it != bindings.end(); ++it)
+                it != bindings.end(); ++it) {
+                std::cout << "DecRef " << it->second->AsString() << std::endl;
                 it->second->DecRefs();
+            }
         }
         void AddBinding(Symbol *s, Data *v)
         {
@@ -133,26 +127,22 @@ class Frame : public ManagedMemory {
         Data* LookupValue(Symbol *symbol);
 };
 
-class Environment : public ManagedMemory {
+class Environment : private Frame, public ManagedMemory {
     private:
-        std::deque<Frame*> frames;
-        Environment(std::deque<Frame*>);
         int refs;
+        Environment *base_env;
     public:
-        Environment() { refs = 0; }
-        ~Environment();
+        Environment() { refs = 0; base_env = NULL; }
+        Environment(Environment *base_) : base_env(base_) { refs = 0; base_env->IncRefs(); }
+        ~Environment() { if( base_env != NULL ) base_env->DecRefs(); }
         void IncRefs() { ++refs; }
-        void DecRefs() 
-        { 
-            if( refs > 0 ) --refs; // else throw
-            if( refs == 0 ) this->SelfDestruct(); 
-        }
+        void DecRefs() { --refs; if( refs == 0 ) SelfDestruct(); }
         void SelfDestruct() { std::cout << "deleting environment... " << std::endl; delete this; }
-        Frame* Pop() { Frame *retval = Top(); frames.pop_back(); retval->DecRefs(); return retval; }
-        Frame* Top() { return frames.back(); }
-        void Push(Frame* f) { frames.push_back(f); f->IncRefs(); }
+        void AddBinding(Symbol *sym, Data *value) { Frame::AddBinding(sym, value); }
+        void UpdateBinding(Symbol *sym, Data *value) { Frame::UpdateBinding(sym, value); }
+        bool BindingExists(Symbol *s) { return Frame::BindingExists(s); }
         Data* LookupValue(Symbol *symbol);
-        Environment * Clone();
+
 };
 
 class Cons : public Data {

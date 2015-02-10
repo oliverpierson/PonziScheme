@@ -160,16 +160,14 @@ int main( int argc, char *argv[] )
 //  Frame *globalEnv = initFrame(NIL); /* global env frame */
   Data * exp;
   Environment * global_env = new Environment();
-  Frame * bottom_frame = new Frame();
-  bottom_frame->AddBinding(symbol_table->InternSymbol("nil"), nil);
-  bottom_frame->AddBinding(symbol_table->InternSymbol("null?"), PrimitiveProcedure::MakeProcedure(global_env, Null));
-  bottom_frame->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
-  bottom_frame->AddBinding(symbol_table->InternSymbol("-"), PrimitiveProcedure::MakeProcedure(global_env, NumberMinus));
-  bottom_frame->AddBinding(symbol_table->InternSymbol("*"), PrimitiveProcedure::MakeProcedure(global_env, NumberMul));
-  bottom_frame->AddBinding(symbol_table->InternSymbol("cons"), PrimitiveProcedure::MakeProcedure(global_env, ReaderCons));
-  bottom_frame->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
-  bottom_frame->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
-  global_env->Push(bottom_frame);
+  global_env->AddBinding(symbol_table->InternSymbol("nil"), nil);
+  global_env->AddBinding(symbol_table->InternSymbol("null?"), PrimitiveProcedure::MakeProcedure(global_env, Null));
+  global_env->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
+  global_env->AddBinding(symbol_table->InternSymbol("-"), PrimitiveProcedure::MakeProcedure(global_env, NumberMinus));
+  global_env->AddBinding(symbol_table->InternSymbol("*"), PrimitiveProcedure::MakeProcedure(global_env, NumberMul));
+  global_env->AddBinding(symbol_table->InternSymbol("cons"), PrimitiveProcedure::MakeProcedure(global_env, ReaderCons));
+  global_env->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
+  global_env->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
   global_env->IncRefs();
   
   printf("loading...\n");

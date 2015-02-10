@@ -27,22 +27,20 @@ Data* Cons::Eval(Environment *env)
     }
     else if( head == "define" ){
         if( this->Cadr()->IsAtom() && ((Atom*)this->Cadr())->IsSymbol() ) {
-            Frame *frame = env->Top();
             Symbol* name = (Symbol*)right->Car(); 
             Data* value = right->Cadr()->Eval(env);
-            if( frame->BindingExists(name) )
-                frame->UpdateBinding(name, value);
+            if( env->BindingExists(name) )
+                env->UpdateBinding(name, value);
             else 
-                frame->AddBinding(name, value);
+                env->AddBinding(name, value);
             return value;
        } else if( this->Cadr()->IsCons() ) { //right->Car()->IsCons() ) {
            Procedure * newproc = Procedure::MakeProcedure(env, (Cons*)this->Cadr()->Cdr(), this->Cddr());
-           Frame * frame = env->Top();
            Symbol * name = (Symbol*)this->Cadr()->Car();
-           if( frame->BindingExists(name) )
-               frame->UpdateBinding(name, newproc);
+           if( env->BindingExists(name) )
+               env->UpdateBinding(name, newproc);
            else
-               frame->AddBinding(name, newproc);
+               env->AddBinding(name, newproc);
            return newproc;
        } else throw new BadForm("Cons::Eval");
     } 
@@ -70,13 +68,11 @@ SymbolTable::~SymbolTable()
 
 Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
 {
-    Environment *new_env = environment->Clone();
-    Frame *frame = new Frame();
+    Environment *new_env = new Environment(environment);
     std::vector<Symbol*>::iterator symit = args->begin();
     std::vector<Data*>::iterator valit = argvals.begin();
     for( ; symit != args->end() && valit != argvals.end(); ++symit, ++valit )
-        frame->AddBinding(*symit, *valit);
-    new_env->Push(frame);
+        new_env->AddBinding(*symit, *valit);
     Data *return_data;
     Data *current_code = code;
     new_env->IncRefs();
@@ -85,7 +81,6 @@ Data* Procedure::Apply(Environment *current_env, std::vector<Data*> argvals)
         current_code = current_code->Cdr();
     } while( !current_code->IsNil() );
     new_env->DecRefs();
-    //delete frame;
     return return_data;
 }
 
@@ -98,56 +93,11 @@ Data* Frame::LookupValue(Symbol *symbol)
 
 Data* Environment::LookupValue(Symbol *symbol)
 { 
-    if( !frames.empty() ) {
-        std::stack<Frame*> tempframes;
-        Frame *fp = Top(); //frames.top();
-        while( !fp->BindingExists(symbol) ) {
-            tempframes.push(Top());
-            //Pop();
-            frames.pop_back();
-            if( frames.empty() ) {
-                // the binding doesn't exists so restore the environment and throw exception
-                while( !tempframes.empty() ) {
-                    //Push(tempframes.top());
-                    frames.push_back(tempframes.top());
-                    tempframes.pop();
-                }
-                throw new MissingBinding("Environment::LookupValue", symbol->AsString());    
-            }
-            fp = Top();
-        }
-        while( !tempframes.empty() ) {
-            //Push(tempframes.top());
-            frames.push_back(tempframes.top());
-            tempframes.pop();
-        }
-        return fp->LookupValue(symbol);
-    }
-    else {
-        // environment contains no frames
-        throw new MissingBinding("Environment::LookupValue", symbol->AsString());
-    }
-}
-
-Environment * Environment::Clone()
-{
-    return new Environment(frames);
-}
-
-Environment::Environment(std::deque<Frame*> frames_)
-{
-    frames = std::deque<Frame*>(frames_.size());
-    frames = frames_;
-    std::deque<Frame*>::iterator it;
-    for( it = frames.begin(); it != frames.end(); ++it )
-        (*it)->IncRefs();
-}
-
-Environment::~Environment()
-{
-    std::deque<Frame*>::iterator it;
-    for( it = frames.begin(); it != frames.end(); ++it )
-        (*it)->DecRefs();
+    if( BindingExists(symbol) )
+        return Frame::LookupValue(symbol);
+    else if( base_env != NULL )
+        return base_env->LookupValue(symbol);
+    else throw new MissingBinding("Environment::LookupValue", symbol->AsString());
 }
 
 Procedure * Procedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)
