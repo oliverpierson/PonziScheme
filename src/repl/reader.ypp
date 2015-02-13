@@ -46,7 +46,7 @@ sexp:
 ;
 
 %%
-#include "ponzi.h"
+#include "Ponzi.h"
 
 Data* cons(Data * x, Data * y)
 {
