@@ -84,22 +84,6 @@ Data* SchemeProcedure::Apply(Environment *current_env, std::vector<Data*> argval
     return return_data;
 }
 
-Data* Frame::LookupValue(Symbol *symbol) 
-{ 
-    if( !BindingExists(symbol) )
-        throw new MissingBinding("Frame::Lookup", symbol->AsString());
-    return bindings[symbol]; 
-}
-
-Data* Environment::LookupValue(Symbol *symbol)
-{ 
-    if( BindingExists(symbol) )
-        return Frame::LookupValue(symbol);
-    else if( base_env != NULL )
-        return base_env->LookupValue(symbol);
-    else throw new MissingBinding("Environment::LookupValue", symbol->AsString());
-}
-
 SchemeProcedure * SchemeProcedure::MakeProcedure(Environment *env, Cons *arglist, Data *codelist)
 {
     std::vector<Symbol*> *argvec = new std::vector<Symbol*>();
