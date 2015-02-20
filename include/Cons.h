@@ -12,14 +12,13 @@ class Cons : public Data {
     public:
         Cons(Data *x, Data *y) : Data() { left = x; right = y; x->IncRefs(); y->IncRefs(); }
         ~Cons() { left->DecRefs(); right->DecRefs(); }
-        bool IsCons() { return true; }
         virtual bool IsA(DataType T) { return T == CONS ? true : Data::IsA(T); }
         std::string AsString() 
         {
             std::string list_str("(");
             for(Data * it = this; !it->IsNil(); it = it->Cdr() ) { 
                 list_str += it->Car()->AsString() + " ";
-                if( it->Cdr()->IsAtom() ) { // in this case, this is a cons cell not a list
+                if( it->Cdr()->IsA(ATOM) ) { // in this case, this is a cons cell not a list
                     list_str += ". ";
                     list_str += it->Cdr()->AsString() + " ";
                     break;

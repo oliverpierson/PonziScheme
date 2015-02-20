@@ -47,6 +47,9 @@ sexp:
 
 %%
 #include "Ponzi.h"
+#include "boost/cast.hpp"
+
+using namespace boost;
 
 Data* cons(Data * x, Data * y)
 {
@@ -84,9 +87,7 @@ Data* NumberAdd(std::vector<Data*> args)
         int num_val = 0;
         std::vector<Data*>::iterator it = args.begin();
         for( ; it != args.end(); ++it) 
-            if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
-                num_val += ((Number*)*it)->GetValue();
-            else throw new ReaderExcept("NumberAdd","");
+            num_val += polymorphic_cast<Number*>(*it)->GetValue();
         return new Number(num_val);
     }
     throw new ReaderExcept("NumberAdd","");
@@ -97,13 +98,11 @@ Data* NumberMinus(std::vector<Data*> args)
     if( !args.empty() ) {
         int num_val = 0;
         std::vector<Data*>::iterator it = args.begin();
-        if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) {
-            num_val = ((Number*)*it)->GetValue();
+        if( (*it)->IsA(NUMBER) ) {
+            num_val = polymorphic_cast<Number*>(*it)->GetValue();
             ++it;
             for( ; it != args.end(); ++it) 
-                if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
-                    num_val -= ((Number*)*it)->GetValue();
-                else throw new ReaderExcept("NumberMinus","");
+                num_val -= polymorphic_cast<Number*>(*it)->GetValue();
             return new Number(num_val);
         }
     }
@@ -116,11 +115,9 @@ Data* NumberMul(std::vector<Data*> args)
         int num_val = 1;
         std::vector<Data*>::iterator it = args.begin();
         for( ; it != args.end(); ++it) 
-            if( (*it)->IsAtom() && ((Atom*)*it)->IsNumber() ) 
-                num_val *= ((Number*)*it)->GetValue();
-            else throw new ReaderExcept("NumberMul","");
+            num_val *= polymorphic_cast<Number*>(*it)->GetValue();
         return new Number(num_val);
-    }
+    } 
     throw new ReaderExcept("NumberMul","");
 }
 
@@ -134,9 +131,7 @@ Data* GetRefCount(std::vector<Data*> args)
 Data* Equals(std::vector<Data*> args)
 {
     if( args.size() == 2 )
-        if( args[0]->IsAtom() && args[1]->IsAtom() )
-            if( ((Atom*)args[0])->IsNumber() && ((Atom*)args[1])->IsNumber() )
-                return new Bool(((Number*)args[0])->GetValue() == ((Number*)args[1])->GetValue());
+        return new Bool(polymorphic_cast<Number*>(args[0])->GetValue() == polymorphic_cast<Number*>(args[1])->GetValue());
     throw new ReaderExcept("Equals","");
 }
 
@@ -180,6 +175,8 @@ int main( int argc, char *argv[] )
         std::cout << "Missing Binding for " << e->GetMessage() << ", caller: " << e->GetCaller() << std::endl;
     } catch (ReaderExcept *e) {
         std::cout << "Reader encountered an error in " << e->GetCaller() << std::endl;
+    } catch (std::bad_cast e) {
+        std::cout << "Badly formed expression: " << exp->AsString() << std::endl;
     }
     printf("\n");
     printf("\n>> ");

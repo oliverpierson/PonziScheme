@@ -50,11 +50,11 @@ Data* Cons::Eval(Environment *env)
     else if( head == "quote" )
         return this->Cadr();
     else if( head == "lambda" ) {
-        if( this->Cadr()->IsCons() )
+        if( this->Cadr()->IsA(CONS) )
             return SchemeProcedure::MakeProcedure(env, polymorphic_cast<Cons*>(this->Cadr()), this->Cddr());
     }
-    else if( this->Car()->Eval(env)->IsProcedure() ) {
-        if( this->Cdr()->IsCons() )
+    else if( this->Car()->Eval(env)->IsA(PROC) ) {
+        if( this->Cdr()->IsA(CONS) )
             return EvalProcedure((SchemeProcedure*)left->Eval(env), polymorphic_cast<Cons*>(right), env);
     }
     throw new BadForm("Cons::Eval"); // unknown special-form

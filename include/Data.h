@@ -11,7 +11,8 @@ typedef enum
     CONS,
     BOOL,
     NUMBER,
-    SYM
+    SYM,
+    PROC
 } DataType;
 
 class Environment; // Forward declaration
@@ -33,12 +34,7 @@ class Data : public ManagedMemory {
         void SelfDestruct() { delete this; }
         int GetRefs() { return refs; }
 
-        // some builtins -- should be a predicate for each builtin datatype
-        virtual bool IsAtom() { return false; }
-        virtual bool IsCons() { return false; }
-        virtual bool IsProcedure() { return false; }
         virtual bool IsNil() { return false; } 
-        virtual bool IsBool() { return false; }
         virtual bool IsA(DataType) { return false; }
 
         virtual Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
