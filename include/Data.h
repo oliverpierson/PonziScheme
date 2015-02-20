@@ -5,6 +5,15 @@
 #include "Environment.h"
 #include "Exception.h"
 
+typedef enum
+{
+    ATOM,
+    CONS,
+    BOOL,
+    NUMBER,
+    SYM
+} DataType;
+
 class Environment; // Forward declaration
 
 class Data : public ManagedMemory { 
@@ -30,6 +39,7 @@ class Data : public ManagedMemory {
         virtual bool IsProcedure() { return false; }
         virtual bool IsNil() { return false; } 
         virtual bool IsBool() { return false; }
+        virtual bool IsA(DataType) { return false; }
 
         virtual Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
         virtual Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }

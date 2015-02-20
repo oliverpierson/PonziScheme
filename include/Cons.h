@@ -13,6 +13,7 @@ class Cons : public Data {
         Cons(Data *x, Data *y) : Data() { left = x; right = y; x->IncRefs(); y->IncRefs(); }
         ~Cons() { left->DecRefs(); right->DecRefs(); }
         bool IsCons() { return true; }
+        virtual bool IsA(DataType T) { return T == CONS ? true : Data::IsA(T); }
         std::string AsString() 
         {
             std::string list_str("(");

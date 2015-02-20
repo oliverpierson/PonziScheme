@@ -1,6 +1,9 @@
 #include "ponzi.h"
 #include <string>
 #include <iostream>
+#include "boost/cast.hpp"
+
+using namespace boost;
 
 Data* Nil::Eval(Environment *env)
 {
@@ -20,41 +23,39 @@ Data * EvalProcedure(Procedure * proc, Cons * arglist, Environment * env)
 Data* Cons::Eval(Environment *env)
 {
     std::string head = left->AsString();
-    if( head == "if" && this->Cadr()->Eval(env)->IsBool() ) {
-        if( ((Bool*)this->Cadr()->Eval(env))->IsTrue() )
+    if( head == "if" ) {
+        if( polymorphic_cast<Bool*>(this->Cadr()->Eval(env))->IsTrue() )
             return this->Cdr()->Cadr()->Eval(env);
         else return this->Cddr()->Cadr()->Eval(env);
     }
     else if( head == "define" ){
-        if( this->Cadr()->IsAtom() && ((Atom*)this->Cadr())->IsSymbol() ) {
-            Symbol* name = (Symbol*)right->Car(); 
+        if( this->Cadr()->IsA(SYM) ) {
+            Symbol* name = polymorphic_cast<Symbol*>(this->Cadr()); 
             Data* value = right->Cadr()->Eval(env);
             if( env->BindingExists(name) )
                 env->UpdateBinding(name, value);
             else 
                 env->AddBinding(name, value);
             return value;
-       } else if( this->Cadr()->IsCons() ) { //right->Car()->IsCons() ) {
-           SchemeProcedure * newproc = SchemeProcedure::MakeProcedure(env, (Cons*)this->Cadr()->Cdr(), this->Cddr());
-           Symbol * name = (Symbol*)this->Cadr()->Car();
+        } else if( this->Cadr()->IsA(CONS) ) {
+           SchemeProcedure * newproc = SchemeProcedure::MakeProcedure(env, polymorphic_cast<Cons*>(this->Cadr()->Cdr()), this->Cddr() );
+           Symbol * name = polymorphic_cast<Symbol*>(this->Cadr()->Car());
            if( env->BindingExists(name) )
                env->UpdateBinding(name, newproc);
            else
                env->AddBinding(name, newproc);
            return newproc;
-       } else throw new BadForm("Cons::Eval");
+           } 
     } 
     else if( head == "quote" )
         return this->Cadr();
     else if( head == "lambda" ) {
         if( this->Cadr()->IsCons() )
-            return SchemeProcedure::MakeProcedure(env, (Cons*)this->Cadr(), this->Cddr());
-        else throw new BadForm("Cons::Eval");
+            return SchemeProcedure::MakeProcedure(env, polymorphic_cast<Cons*>(this->Cadr()), this->Cddr());
     }
     else if( this->Car()->Eval(env)->IsProcedure() ) {
         if( this->Cdr()->IsCons() )
-            return EvalProcedure((SchemeProcedure*)left->Eval(env), (Cons*)right, env);
-        else throw new BadForm("Cons::Eval");
+            return EvalProcedure((SchemeProcedure*)left->Eval(env), polymorphic_cast<Cons*>(right), env);
     }
     throw new BadForm("Cons::Eval"); // unknown special-form
 }
@@ -89,7 +90,7 @@ SchemeProcedure * SchemeProcedure::MakeProcedure(Environment *env, Cons *arglist
     std::vector<Symbol*> *argvec = new std::vector<Symbol*>();
     while( !arglist->IsNil() ) {
         argvec->push_back((Symbol*)arglist->Car());
-        arglist = (Cons*)arglist->Cdr();
+        arglist = polymorphic_cast<Cons*>(arglist->Cdr());
     }
     SchemeProcedure *proc = new SchemeProcedure(env, codelist, argvec);
     return proc;

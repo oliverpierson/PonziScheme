@@ -9,6 +9,7 @@ class Number : public Atom {
     public:
         Number(int i) : Atom() { value = i; }
         bool IsNumber() { return true; }
+        virtual bool IsA(DataType T) { return T == NUMBER ? true : Atom::IsA(T); }
         std::string AsString() { return std::to_string(value); }
         int GetValue() { return value; }
 };

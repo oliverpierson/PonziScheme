@@ -9,6 +9,7 @@ class Bool : public Atom {
     public:
         Bool(bool b) : Atom() { value = b; }
         bool IsBool() { return true; }
+        virtual bool IsA(DataType T) { return T == BOOL ? true : Atom::IsA(T); }
         std::string AsString() { return std::to_string(value); }
         bool IsTrue() { return value ? true : false; }
         bool IsFalse() { return !IsTrue(); } 
