@@ -149,6 +149,15 @@ Data* Null(std::vector<Data*> args)
     throw new ReaderExcept("Null","");
 }
 
+Data* Display(std::vector<Data*> args)
+{
+    if( args.size() == 1 ) {
+        std::cout << args[0]->AsString() << std::endl;
+        return nil;
+    }
+    throw new ReaderExcept("Display","");
+}
+
 int main( int argc, char *argv[] )
 {
   Data * exp;
@@ -161,6 +170,7 @@ int main( int argc, char *argv[] )
   global_env->AddBinding(symbol_table->InternSymbol("cons"), PrimitiveProcedure::MakeProcedure(global_env, ReaderCons));
   global_env->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
   global_env->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
+  global_env->AddBinding(symbol_table->InternSymbol("display"), PrimitiveProcedure::MakeProcedure(global_env, Display));
   global_env->IncRefs();
   
   printf("loading...\n");
