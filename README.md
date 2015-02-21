@@ -1,5 +1,10 @@
 # PonziScheme
-Scheme in C++
+A toy scheme interpreter written in C++.
+
+# Requirements
+* Boost (only need for ```polymorphic_cast```)
+* GNU make
+* C++ (of course!)
 
 # Building
 From the base directory, do:
