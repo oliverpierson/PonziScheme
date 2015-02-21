@@ -1,5 +1,6 @@
 INCLUDE=../../include
 LIB=../../lib
+BIN=../../bin
 
 reader.tab.o:
 	bison -d reader.ypp
@@ -10,7 +11,7 @@ lex.yy.o:
 	g++ -c lex.yy.c -I$(INCLUDE)
 
 reader: reader.tab.o lex.yy.o
-	g++ reader.tab.o lex.yy.o $(LIB)/Ponzi.o $(LIB)/Environment.o $(LIB)/Symbol.o -I$(INCLUDE) -o reader
+	g++ reader.tab.o lex.yy.o $(LIB)/Ponzi.o $(LIB)/Environment.o $(LIB)/Symbol.o -I$(INCLUDE) -o $(BIN)/reader
 
 clean:
 	rm -rf *.tab.[ch]pp

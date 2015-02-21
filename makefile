@@ -1,18 +1,21 @@
 INCLUDE=./include
+LIB=./lib
 
-all: Ponzi.o Environment.o Symbol.o
+objects = Ponzi.o Environment.o Symbol.o
+
+all: $(objects)
 
 Ponzi.o: 
-	rm -f lib/Ponzi.o
-	g++ -c src/Ponzi.cpp -o lib/Ponzi.o -I$(INCLUDE)
+	rm -f $(LIB)/Ponzi.o
+	g++ -c src/Ponzi.cpp -o $(LIB)/Ponzi.o -I$(INCLUDE)
 
 Environment.o: 
-	rm -f lib/Environment.o
-	g++ -c src/Environment.cpp -o lib/Environment.o -I$(INCLUDE)
+	rm -f $(LIB)/Environment.o
+	g++ -c src/Environment.cpp -o $(LIB)/Environment.o -I$(INCLUDE)
 
 Symbol.o: 
-	rm -f lib/Symbol.o
-	g++ -c src/Symbol.cpp -o lib/Symbol.o -I$(INCLUDE)
+	rm -f $(LIB)/Symbol.o
+	g++ -c src/Symbol.cpp -o $(LIB)/Symbol.o -I$(INCLUDE)
 
 clean:
-	rm -f lib/*.o
+	rm -f $(LIB)/*.o
