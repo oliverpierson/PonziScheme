@@ -26,7 +26,8 @@ int main(void)
         d = child_env.LookupValue(&y);
         cout << "LookupValue test failed." << endl;
         exit(EXIT_FAILURE);
-    } catch (MissingBinding *e) {
+    } catch (Exception e) {
+        assert(e == MISSINGBINDING);
         cout << "MissingBinding exception test passed." << std::endl;
     }
 
@@ -48,20 +49,23 @@ int main(void)
         Symbol *s = new Symbol("s");
         s->Car();
         exit(EXIT_FAILURE);
-    } catch (NotCons *e) {
+    } catch (Exception e) {
+        assert(e == NOTCONS);
         cout << "NotCons exception test 1 passed." << endl;
     }
     try {
         nil->Cadr();    
         exit(EXIT_FAILURE);
-    } catch (NotCons *e) {
+    } catch (Exception e) {
+        assert(e == NOTCONS);
         cout << "NotCons exception test 2 passed." << endl;
     }
     try {
         Cons *cons = new Cons(new Number(1), new Number(2));
         cons->Cadr();
         exit(EXIT_FAILURE);
-    } catch (NotCons *e) {
+    } catch (Exception e) {
+        assert(e == NOTCONS);
         cout << "NotCons exception test 3 passed." << endl;
     }
 

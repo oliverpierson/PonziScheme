@@ -76,11 +76,6 @@ int yywrap()
   return 1;
 }
 
-class ReaderExcept : public Exception {
-    public:
-        ReaderExcept(const char *caller_, const std::string message_) : Exception(caller_, message_) {}
-};
-
 Data* NumberAdd(std::vector<Data*> args)
 {
     if( !args.empty() ) {
@@ -90,7 +85,7 @@ Data* NumberAdd(std::vector<Data*> args)
             num_val += polymorphic_cast<Number*>(*it)->GetValue();
         return new Number(num_val);
     }
-    throw new ReaderExcept("NumberAdd","");
+    throw BADARGS;
 }
 
 Data* NumberMinus(std::vector<Data*> args)
@@ -106,7 +101,7 @@ Data* NumberMinus(std::vector<Data*> args)
             return new Number(num_val);
         }
     }
-    throw new ReaderExcept("NumberMinus","");
+    throw BADARGS;
 }
 
 Data* NumberMul(std::vector<Data*> args)
@@ -118,35 +113,35 @@ Data* NumberMul(std::vector<Data*> args)
             num_val *= polymorphic_cast<Number*>(*it)->GetValue();
         return new Number(num_val);
     } 
-    throw new ReaderExcept("NumberMul","");
+    throw BADARGS;
 }
 
 Data* GetRefCount(std::vector<Data*> args)
 {
     if( !args.empty() )
         return new Number(args[0]->GetRefs());
-    throw new ReaderExcept("GetRefCount","");
+    throw BADARGS;
 }
 
 Data* Equals(std::vector<Data*> args)
 {
     if( args.size() == 2 )
         return new Bool(polymorphic_cast<Number*>(args[0])->GetValue() == polymorphic_cast<Number*>(args[1])->GetValue());
-    throw new ReaderExcept("Equals","");
+    throw BADARGS;
 }
 
 Data* ReaderCons(std::vector<Data*> args)
 {
     if( args.size() == 2 )
         return new Cons(args[0], args[1]);
-    throw new ReaderExcept("ReaderCons","");
+    throw BADARGS;
 }
 
 Data* Null(std::vector<Data*> args)
 {
     if( args.size() == 1 )
         return new Bool(args[0]->IsNil());
-    throw new ReaderExcept("Null","");
+    throw BADARGS;
 }
 
 Data* Display(std::vector<Data*> args)
@@ -155,7 +150,7 @@ Data* Display(std::vector<Data*> args)
         std::cout << args[0]->AsString() << std::endl;
         return nil;
     }
-    throw new ReaderExcept("Display","");
+    throw BADARGS;
 }
 
 int main( int argc, char *argv[] )
@@ -181,10 +176,17 @@ int main( int argc, char *argv[] )
         std::cout << exp->Eval(global_env)->AsString() << std::endl;
         exp->IncRefs();
         exp->DecRefs();
-    } catch (MissingBinding *e) {
-        std::cout << "Missing Binding for " << e->GetMessage() << ", caller: " << e->GetCaller() << std::endl;
-    } catch (ReaderExcept *e) {
-        std::cout << "Reader encountered an error in " << e->GetCaller() << std::endl;
+    } catch (Exception e) {
+        switch(e) {
+            case MISSINGBINDING:
+                std::cout << "Missing Binding: " << exp->AsString() << std::endl;
+                break;
+            case BADARGS:
+                std::cout << "Unexpected argument(s) passed to a primitive function: " << exp->AsString() << std::endl;
+                break;
+            default:
+                std::cout << "An error occurred, currently evaluating " << exp->AsString() << std::endl;
+        }
     } catch (std::bad_cast e) {
         std::cout << "Badly formed expression: " << exp->AsString() << std::endl;
     }

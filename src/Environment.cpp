@@ -13,7 +13,7 @@ void Frame::AddBinding(Symbol *s, Data *v)
     if( !BindingExists(s) ) {
         bindings[s] = v;
         v->IncRefs();
-    } else throw 1234;
+    } else throw BADBIND;
 } 
 
 void Frame::UpdateBinding(Symbol *s, Data *v)
@@ -22,7 +22,7 @@ void Frame::UpdateBinding(Symbol *s, Data *v)
         bindings[s]->DecRefs();
         bindings[s] = v;
         v->IncRefs();
-    } else throw 1234;
+    } else throw BADBIND;
 }
 
 bool Frame::BindingExists(Symbol *symbol)
@@ -35,7 +35,7 @@ bool Frame::BindingExists(Symbol *symbol)
 Data* Frame::LookupValue(Symbol *symbol) 
 { 
     if( !BindingExists(symbol) )
-        throw new MissingBinding("Frame::Lookup", symbol->AsString());
+        throw MISSINGBINDING; //new MissingBinding("Frame::Lookup", symbol->AsString());
     return bindings[symbol]; 
 }
 
@@ -45,7 +45,7 @@ Data* Environment::LookupValue(Symbol *symbol)
         return Frame::LookupValue(symbol);
     else if( base_env != NULL )
         return base_env->LookupValue(symbol);
-    else throw new MissingBinding("Environment::LookupValue", symbol->AsString());
+    else throw MISSINGBINDING; //new MissingBinding("Environment::LookupValue", symbol->AsString());
 }
 
 Environment::Environment(Environment *base_) : base_env(base_) 

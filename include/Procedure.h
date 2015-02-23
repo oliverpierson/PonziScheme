@@ -8,7 +8,7 @@
 class Procedure : public Data {
     public:
         Procedure() : Data() { }
-        virtual Data* Apply(Environment *env, std::vector<Data*> args) { throw 101; }
+        virtual Data* Apply(Environment *env, std::vector<Data*> args) = 0;
         std::string AsString() { return std::string("#<function>"); }
         Data * Eval(Environment *env) { return this; }
         bool IsA(DataType T) { return T == PROC ? true : false; }

@@ -37,10 +37,10 @@ class Data : public ManagedMemory {
         virtual bool IsNil() { return false; } 
         virtual bool IsA(DataType) { return false; }
 
-        virtual Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
-        virtual Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
-        virtual Data * Cadr() { throw new NotCons("Data::Cadr", this->AsString()); }
-        virtual Data * Cddr() { throw new NotCons("Data::Cddr", this->AsString()); }
+        virtual Data * Car() { throw NOTCONS; } // new NotCons("Data::Car", this->AsString()); }
+        virtual Data * Cdr() { throw NOTCONS; } // new NotCons("Data::Cdr", this->AsString()); }
+        virtual Data * Cadr() { throw NOTCONS; } // new NotCons("Data::Cadr", this->AsString()); }
+        virtual Data * Cddr() { throw NOTCONS; } // new NotCons("Data::Cddr", this->AsString()); }
 };
 
 #endif // DATA_H

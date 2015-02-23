@@ -41,10 +41,10 @@ class Nil : public Cons {
         bool IsNil() { return true; }
         std::string AsString() { return std::string("()"); }
         Data* Eval(Environment*);
-        Data * Car() { throw new NotCons("Data::Car", this->AsString()); }
-        Data * Cdr() { throw new NotCons("Data::Cdr", this->AsString()); }
-        Data * Cadr() { throw new NotCons("Data::Cadr", this->AsString()); }
-        Data * Cddr() { throw new NotCons("Data::Cddr", this->AsString()); }
+        Data * Car() { throw NOTCONS; } // new NotCons("Data::Car", this->AsString()); }
+        Data * Cdr() { throw NOTCONS; } // new NotCons("Data::Cdr", this->AsString()); }
+        Data * Cadr() { throw NOTCONS; } // new NotCons("Data::Cadr", this->AsString()); }
+        Data * Cddr() { throw NOTCONS; } // new NotCons("Data::Cddr", this->AsString()); }
 };
 
 Nil *const nil = new Nil();

@@ -57,7 +57,7 @@ Data* Cons::Eval(Environment *env)
         if( this->Cdr()->IsA(CONS) )
             return EvalProcedure((SchemeProcedure*)left->Eval(env), polymorphic_cast<Cons*>(right), env);
     }
-    throw new BadForm("Cons::Eval"); // unknown special-form
+    throw BADFORM; // unknown special-form
 }
 
 SymbolTable::~SymbolTable()
