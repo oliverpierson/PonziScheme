@@ -17,6 +17,9 @@ A toy scheme interpreter written in C++.
   * `=`
   * `cons`
   * `null?`
+  * `car`
+  * `cdr`
+  * `equal?`
 
 # What's to come
   * Compilation to a intermediate form
