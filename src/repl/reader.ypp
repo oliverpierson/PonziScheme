@@ -76,6 +76,29 @@ int yywrap()
   return 1;
 }
 
+Data* Car(std::vector<Data*> args)
+{
+    if( args.size() == 1 ) 
+        // Data::Car() on non-cons is a check exception
+        return args[0]->Car();
+    else throw BADARGS;
+}
+
+Data* Cdr(std::vector<Data*> args)
+{
+    if( args.size() == 1 ) 
+        // Data::Cdr() on non-cons is a check exception
+        return args[0]->Cdr();
+    else throw BADARGS;
+}
+
+Data* Equal(std::vector<Data*> args)
+{
+    if( args.size() == 2 ) 
+        return new Bool(args[0] == args[1]);
+    else throw BADARGS;
+}
+
 Data* NumberAdd(std::vector<Data*> args)
 {
     if( !args.empty() ) {
@@ -123,7 +146,7 @@ Data* GetRefCount(std::vector<Data*> args)
     throw BADARGS;
 }
 
-Data* Equals(std::vector<Data*> args)
+Data* NumberEqual(std::vector<Data*> args)
 {
     if( args.size() == 2 )
         return new Bool(polymorphic_cast<Number*>(args[0])->GetValue() == polymorphic_cast<Number*>(args[1])->GetValue());
@@ -159,12 +182,15 @@ int main( int argc, char *argv[] )
   Environment * global_env = new Environment();
   global_env->AddBinding(symbol_table->InternSymbol("nil"), nil);
   global_env->AddBinding(symbol_table->InternSymbol("null?"), PrimitiveProcedure::MakeProcedure(global_env, Null));
+  global_env->AddBinding(symbol_table->InternSymbol("car"), PrimitiveProcedure::MakeProcedure(global_env, Car));
+  global_env->AddBinding(symbol_table->InternSymbol("cdr"), PrimitiveProcedure::MakeProcedure(global_env, Cdr));
+  global_env->AddBinding(symbol_table->InternSymbol("equal?"), PrimitiveProcedure::MakeProcedure(global_env, Equal));
   global_env->AddBinding(symbol_table->InternSymbol("+"), PrimitiveProcedure::MakeProcedure(global_env, NumberAdd));
   global_env->AddBinding(symbol_table->InternSymbol("-"), PrimitiveProcedure::MakeProcedure(global_env, NumberMinus));
   global_env->AddBinding(symbol_table->InternSymbol("*"), PrimitiveProcedure::MakeProcedure(global_env, NumberMul));
   global_env->AddBinding(symbol_table->InternSymbol("cons"), PrimitiveProcedure::MakeProcedure(global_env, ReaderCons));
   global_env->AddBinding(symbol_table->InternSymbol("refs"), PrimitiveProcedure::MakeProcedure(global_env, GetRefCount));
-  global_env->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, Equals));
+  global_env->AddBinding(symbol_table->InternSymbol("="), PrimitiveProcedure::MakeProcedure(global_env, NumberEqual));
   global_env->AddBinding(symbol_table->InternSymbol("display"), PrimitiveProcedure::MakeProcedure(global_env, Display));
   global_env->IncRefs();
   
