@@ -16,9 +16,9 @@
 line:
 /* empty */
 //| line 
-| line atom { *expr = $2; printf("parse complete.\n"); YYACCEPT; }
-| line list { *expr = $2; printf("parse complete.\n"); YYACCEPT; }
-| line quote { *expr = $2; printf("parse complete.\n"); YYACCEPT; }
+| line atom { *expr = $2; YYACCEPT; }
+| line list { *expr = $2; YYACCEPT; }
+| line quote { *expr = $2; YYACCEPT; }
 ;
 
 atom:
@@ -27,8 +27,8 @@ INTEGER
 ;
 
 quote:
-'\'' atom { $$ = cons(internSymbol("quote", symbol_table), cons($2, NIL)); }
-| '\'' list { $$ = cons(internSymbol("quote", symbol_table), cons($2, NIL)); }
+'\'' atom { $$ = new Cons(InternSymbol("quote", symbol_table), new Cons($2, NIL)); }
+| '\'' list { $$ = new Cons(InternSymbol("quote", symbol_table), new Cons($2, NIL)); }
 ;
 
 list:
@@ -37,12 +37,12 @@ list:
 
 sexp:
 /* empty */ { $$ = NIL; }
-| atom { $$ = cons($1, NIL); }
-| list { $$ = cons($1, NIL); }
-| atom sexp { $$ = cons($1, $2); }
-| list sexp { $$ = cons($1, $2); }
-| quote { $$ = cons($1, NIL); }
-| quote sexp { $$ = cons($1, $2); }
+| atom { $$ = new Cons($1, NIL); }
+| list { $$ = new Cons($1, NIL); }
+| atom sexp { $$ = new Cons($1, $2); }
+| list sexp { $$ = new Cons($1, $2); }
+| quote { $$ = new Cons($1, NIL); }
+| quote sexp { $$ = new Cons($1, $2); }
 ;
 
 %%
@@ -50,21 +50,6 @@ sexp:
 #include "boost/cast.hpp"
 
 using namespace boost;
-
-Data* cons(Data * x, Data * y)
-{
-    return new Cons(x, y);
-}
-
-Data* internSymbol(char * str, SymbolTable * symtab)
-{
-    return symtab->InternSymbol(str);
-}
-
-Data* makeInt(char * str)
-{
-    return new Number(atoi(str));
-}
 
 int yyerror( Data** dat, char *str )
 {
@@ -74,6 +59,16 @@ int yyerror( Data** dat, char *str )
 int yywrap()
 {
   return 1;
+}
+
+Data* InternSymbol(char * str, SymbolTable * symtab)
+{
+    return symtab->InternSymbol(str);
+}
+
+Data* MakeInt(char * str)
+{
+    return new Number(atoi(str));
 }
 
 Data* Car(std::vector<Data*> args)

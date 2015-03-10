@@ -9,10 +9,10 @@
 #define NIL nil
 
 /* functions for the parser */
-Data * cons(Data *, Data *);
+//Data * cons(Data *, Data *);
 
 /* functions for the lexical analyzer */
-Data * makeInt(char *);
-Data * internSymbol(char *, SymbolTable *);
+Data * InternSymbol(char *, SymbolTable *);
+Data * MakeInt(char *);
 
 #endif /* __READER_H__ */
