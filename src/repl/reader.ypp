@@ -7,8 +7,9 @@
   SymbolTable * symbol_table = new SymbolTable();
 %}
 
-%token INTEGER
-%token SYMBOL
+%token _INTEGER
+%token _FLOAT
+%token _SYMBOL
 %parse-param { Data **expr }
 
 %%
@@ -22,8 +23,9 @@ line:
 ;
 
 atom:
-INTEGER
-| SYMBOL
+_INTEGER
+| _FLOAT
+| _SYMBOL
 ;
 
 quote:
@@ -68,7 +70,12 @@ Data* InternSymbol(char * str, SymbolTable * symtab)
 
 Data* MakeInt(char * str)
 {
-    return new Number(atoi(str));
+    return Number::Integer(atoi(str));
+}
+
+Data* MakeFloat(char * str)
+{
+    return Number::Float(atof(str));
 }
 
 Data* Car(std::vector<Data*> args)
@@ -97,11 +104,17 @@ Data* Equal(std::vector<Data*> args)
 Data* NumberAdd(std::vector<Data*> args)
 {
     if( !args.empty() ) {
-        int num_val = 0;
         std::vector<Data*>::iterator it = args.begin();
-        for( ; it != args.end(); ++it) 
-            num_val += polymorphic_cast<Number*>(*it)->GetValue();
-        return new Number(num_val);
+        Number * result = polymorphic_cast<Number*>(args[0]);
+        result->IncRefs();
+        Number * prev_result;
+        for(++it ; it != args.end(); ++it) {
+            prev_result = result;
+            result = result->Plus(polymorphic_cast<Number*>(*it));
+            result->IncRefs();
+            prev_result->DecRefs();
+        } 
+        return result;
     }
     throw BADARGS;
 }
@@ -109,15 +122,17 @@ Data* NumberAdd(std::vector<Data*> args)
 Data* NumberMinus(std::vector<Data*> args)
 {
     if( !args.empty() ) {
-        int num_val = 0;
         std::vector<Data*>::iterator it = args.begin();
-        if( (*it)->IsA(NUMBER) ) {
-            num_val = polymorphic_cast<Number*>(*it)->GetValue();
-            ++it;
-            for( ; it != args.end(); ++it) 
-                num_val -= polymorphic_cast<Number*>(*it)->GetValue();
-            return new Number(num_val);
-        }
+        Number * result = polymorphic_cast<Number*>(args[0]);
+        result->IncRefs();
+        Number * prev_result;
+        for(++it ; it != args.end(); ++it) {
+            prev_result = result;
+            result = result->Minus(polymorphic_cast<Number*>(*it));
+            result->IncRefs();
+            prev_result->DecRefs();
+        } 
+        return result;
     }
     throw BADARGS;
 }
@@ -125,26 +140,32 @@ Data* NumberMinus(std::vector<Data*> args)
 Data* NumberMul(std::vector<Data*> args)
 {
     if( !args.empty() ) {
-        int num_val = 1;
         std::vector<Data*>::iterator it = args.begin();
-        for( ; it != args.end(); ++it) 
-            num_val *= polymorphic_cast<Number*>(*it)->GetValue();
-        return new Number(num_val);
-    } 
+        Number * result = polymorphic_cast<Number*>(args[0]);
+        result->IncRefs();
+        Number * prev_result;
+        for(++it ; it != args.end(); ++it) {
+            prev_result = result;
+            result = result->Mul(polymorphic_cast<Number*>(*it));
+            result->IncRefs();
+            prev_result->DecRefs();
+        } 
+        return result;
+    }
     throw BADARGS;
 }
 
 Data* GetRefCount(std::vector<Data*> args)
 {
     if( !args.empty() )
-        return new Number(args[0]->GetRefs());
+        return Number::Integer(args[0]->GetRefs());
     throw BADARGS;
 }
 
 Data* NumberEqual(std::vector<Data*> args)
 {
     if( args.size() == 2 )
-        return new Bool(polymorphic_cast<Number*>(args[0])->GetValue() == polymorphic_cast<Number*>(args[1])->GetValue());
+        return polymorphic_cast<Number*>(args[0])->Equals(polymorphic_cast<Number*>(args[1]));
     throw BADARGS;
 }
 

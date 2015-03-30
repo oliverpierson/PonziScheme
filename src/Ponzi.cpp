@@ -29,12 +29,12 @@ Data* Cons::Eval(Environment *env)
         else return this->Cddr()->Cadr()->Eval(env);
     }
     else if( head == "define" ){
-        if( this->Cadr()->IsA(SYM) ) {
-            Symbol* name = polymorphic_cast<Symbol*>(this->Cadr()); 
+        if( this->Cadr()->IsA(SYMBOL) ) {
+            Symbol* name = polymorphic_cast<Symbol*>(this->Cadr());
             Data* value = right->Cadr()->Eval(env);
             if( env->BindingExists(name) )
                 env->UpdateBinding(name, value);
-            else 
+            else
                 env->AddBinding(name, value);
             return value;
         } else if( this->Cadr()->IsA(CONS) ) {
@@ -45,8 +45,8 @@ Data* Cons::Eval(Environment *env)
            else
                env->AddBinding(name, newproc);
            return newproc;
-           } 
-    } 
+           }
+    }
     else if( head == "quote" )
         return this->Cadr();
     else if( head == "lambda" ) {

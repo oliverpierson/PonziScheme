@@ -8,7 +8,8 @@ enum Exception {
     BADFORM,
     MISSINGBINDING,
     BADBIND,
-    BADARGS 
+    BADARGS,
+    INTERNAL_ERROR
 };
 
 #endif // EXCEPTION_H

@@ -14,5 +14,6 @@
 /* functions for the lexical analyzer */
 Data * InternSymbol(char *, SymbolTable *);
 Data * MakeInt(char *);
+Data * MakeFloat(char *);
 
 #endif /* __READER_H__ */

@@ -37,7 +37,7 @@ class Cons : public Data {
 
 class Nil : public Cons {
     public:
-        Nil() : Cons(new Number(0), new Number(0)) { }
+        Nil() : Cons(Number::Integer(0), Number::Integer(0)) { }
         bool IsNil() { return true; }
         std::string AsString() { return std::string("()"); }
         Data* Eval(Environment*);

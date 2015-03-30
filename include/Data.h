@@ -5,13 +5,18 @@
 #include "Environment.h"
 #include "Exception.h"
 
+// Note that the ordering of the numeric types here
+// is important because it reflects the hierarchy of
+// the numeric tower, e.g. FLOAT > INTEGER 
 typedef enum
 {
     ATOM,
     CONS,
     BOOL,
     NUMBER,
-    SYM,
+    INTEGER,
+    FLOAT,
+    SYMBOL,
     PROC
 } DataType;
 
