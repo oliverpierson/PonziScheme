@@ -4,6 +4,7 @@ A toy scheme interpreter written in C++.
 # What it's got
 ## Types
   * Integers
+  * Floats
   * Symbols
 
 ## Special Forms
